@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Guardian Band",
+    "slug": "guardian-band",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.guardian.band"
+    },
+    "android": {
+      "package": "com.guardian.band"
+    },
+    "web": {},
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Guardian Band to access your microphone for SOS alerts."
+        }
+      ]
+    ]
+  }
+}
