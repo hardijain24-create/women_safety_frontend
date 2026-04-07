@@ -45,13 +45,18 @@ export const Input: React.FC<InputProps> = ({
 
   const inputWrapperStyle: ViewStyle = {
     backgroundColor: theme.colors.card,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: error ? theme.colors.error : theme.colors.border,
     paddingHorizontal: 20,
     paddingVertical: multiline ? 16 : 4,
     minHeight: multiline ? 100 : 64,
     opacity: disabled ? 0.6 : 1,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   };
 
   const textInputStyle: TextStyle = {

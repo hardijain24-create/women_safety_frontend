@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, SafeAreaView, ViewStyle, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { Typography } from '../atoms/Typography';
 import { IconButton } from '../atoms/IconButton';
@@ -13,6 +14,7 @@ interface HeaderProps {
     onPress: () => void;
   };
   transparent?: boolean;
+  showMenu?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,8 +23,14 @@ export const Header: React.FC<HeaderProps> = ({
   onBack,
   rightAction,
   transparent = false,
+  showMenu = false,
 }) => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
+
+  const handleMenuPress = () => {
+    navigation.openDrawer();
+  };
 
   return (
     <SafeAreaView
@@ -43,6 +51,13 @@ export const Header: React.FC<HeaderProps> = ({
           <IconButton
             icon="arrow-left"
             onPress={onBack}
+            size="medium"
+            variant="outlined"
+          />
+        ) : showMenu ? (
+          <IconButton
+            icon="menu"
+            onPress={handleMenuPress}
             size="medium"
             variant="outlined"
           />

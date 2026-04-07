@@ -5,7 +5,7 @@ import { useTheme } from '../../theme';
 interface TypographyProps {
   children: React.ReactNode;
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'bodyLarge' | 'bodySmall' | 'caption' | 'label';
-  color?: 'primary' | 'secondary' | 'muted' | 'inverse' | 'gold';
+  color?: 'primary' | 'secondary' | 'muted' | 'inverse' | 'gold' | 'purple' | 'lilac';
   align?: 'left' | 'center' | 'right';
   weight?: '400' | '500' | '600' | '700';
   style?: TextStyle;
@@ -41,6 +41,8 @@ export const Typography: React.FC<TypographyProps> = ({
     muted: theme.colors.textMuted,
     inverse: theme.colors.textInverse,
     gold: theme.colors.gold,
+    purple: theme.colors.gold,
+    lilac: theme.colors.gold,
   };
 
   const textStyle: TextStyle = {

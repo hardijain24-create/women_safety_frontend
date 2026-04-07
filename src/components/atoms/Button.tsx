@@ -28,10 +28,10 @@ export const Button: React.FC<ButtonProps> = ({
   const { theme } = useTheme();
 
   const sizeStyles = {
-    small: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12 },
-    medium: { paddingVertical: 16, paddingHorizontal: 24, borderRadius: 16 },
-    large: { paddingVertical: 20, paddingHorizontal: 32, borderRadius: 24 },
-    xlarge: { paddingVertical: 24, paddingHorizontal: 40, borderRadius: 32 },
+    small: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: 16 },
+    medium: { paddingVertical: 18, paddingHorizontal: 28, borderRadius: 20 },
+    large: { paddingVertical: 22, paddingHorizontal: 36, borderRadius: 24 },
+    xlarge: { paddingVertical: 26, paddingHorizontal: 44, borderRadius: 28 },
   };
 
   const textSizes = {
@@ -43,17 +43,27 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary: {
-      backgroundColor: theme.colors.navy,
+      backgroundColor: theme.colors.primary,
       borderWidth: 0,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
     },
     secondary: {
       backgroundColor: theme.colors.gold,
       borderWidth: 0,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
     },
     outline: {
       backgroundColor: 'transparent',
       borderWidth: 2,
-      borderColor: theme.colors.navy,
+      borderColor: theme.colors.primary,
     },
     ghost: {
       backgroundColor: 'transparent',
@@ -62,14 +72,19 @@ export const Button: React.FC<ButtonProps> = ({
     danger: {
       backgroundColor: theme.colors.error,
       borderWidth: 0,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
     },
   };
 
   const textColors = {
-    primary: theme.colors.textInverse,
-    secondary: theme.colors.navy,
-    outline: theme.colors.navy,
-    ghost: theme.colors.navy,
+    primary: theme.colors.background,
+    secondary: theme.colors.background,
+    outline: theme.colors.primary,
+    ghost: theme.colors.primary,
     danger: theme.colors.textInverse,
   };
 

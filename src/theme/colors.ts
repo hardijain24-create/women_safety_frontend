@@ -1,82 +1,82 @@
 import type { ColorTheme, SpacingTheme, TypographyTheme } from '../types';
 
 export const lightColors: ColorTheme = {
-  // Background colors - Navy + Beige theme
-  background: '#F5F1E8',
-  backgroundSecondary: '#E8E0D0',
-  card: '#FAF8F3',
-  cardGlass: 'rgba(250, 248, 243, 0.85)',
+  // Background colors - Better contrast for visibility
+  background: '#1A1F2E',
+  backgroundSecondary: '#242B3D',
+  card: '#FAFAFA',
+  cardGlass: 'rgba(250, 250, 250, 0.9)',
   
-  // Text colors
-  textPrimary: '#1F2A44',
-  textSecondary: '#4A5D73',
-  textMuted: '#6E6E6E',
-  textInverse: '#FAF8F3',
+  // Text colors - High contrast
+  textPrimary: '#1A1F2E',
+  textSecondary: '#2D3748',
+  textMuted: '#4A5568',
+  textInverse: '#FAFAFA',
   
-  // Accent colors
-  primary: '#1F2A44',
-  primaryLight: '#2A3A5C',
-  primaryDark: '#151B2B',
-  gold: '#D4AF37',
-  goldLight: '#E5C76B',
-  goldDark: '#B89628',
+  // Accent colors - Beautiful lilac instead of purple
+  primary: '#1A1F2E',
+  primaryLight: '#2D3748',
+  primaryDark: '#1A202C',
+  gold: '#C8A2C8',
+  goldLight: '#D8BFD8',
+  goldDark: '#BA8FBA',
   
-  // Navy colors
-  navy: '#1F2A44',
-  navyLight: '#2A3A5C',
-  navyDark: '#151B2B',
+  // Navy colors (now used as accents)
+  navy: '#1A1F2E',
+  navyLight: '#2D3748',
+  navyDark: '#1A202C',
   
-  // Status colors
-  success: '#8FAF9A',
-  warning: '#E5A853',
-  error: '#D95C5C',
-  info: '#4A5D73',
+  // Status colors - enhanced with cooler tones
+  success: '#4A9D6F',
+  warning: '#D4A574',
+  error: '#8B2635',
+  info: '#5B8FA3',
   
-  // UI colors
-  border: 'rgba(31, 42, 68, 0.12)',
-  borderLight: 'rgba(31, 42, 68, 0.06)',
-  shadow: 'rgba(31, 42, 68, 0.12)',
-  overlay: 'rgba(31, 42, 68, 0.5)',
+  // UI colors - enhanced glassmorphism with better contrast
+  border: 'rgba(26, 31, 46, 0.2)',
+  borderLight: 'rgba(26, 31, 46, 0.1)',
+  shadow: 'rgba(0, 0, 0, 0.25)',
+  overlay: 'rgba(26, 31, 46, 0.7)',
   blurTint: 'light',
 };
 
 export const darkColors: ColorTheme = {
-  // Background colors - Charcoal + Soft Gold accents
-  background: '#1A1A1A',
-  backgroundSecondary: '#2D2D2D',
-  card: '#252525',
-  cardGlass: 'rgba(37, 37, 37, 0.85)',
+  // Background colors - Deeper dark navy with beige accents
+  background: '#0D1117',
+  backgroundSecondary: '#161B22',
+  card: '#1A1F2E',
+  cardGlass: 'rgba(26, 31, 46, 0.9)',
   
   // Text colors
-  textPrimary: '#FAF8F3',
-  textSecondary: '#B8B0A0',
-  textMuted: '#8A8275',
-  textInverse: '#1A1A1A',
+  textPrimary: '#F5F1E8',
+  textSecondary: '#E8E0D0',
+  textMuted: '#B8B0A0',
+  textInverse: '#0D1117',
   
-  // Accent colors
-  primary: '#2A3A5C',
-  primaryLight: '#3A4A6C',
-  primaryDark: '#1A2438',
-  gold: '#E5C76B',
-  goldLight: '#F0DCA0',
-  goldDark: '#C9A227',
+  // Accent colors - Beautiful lilac for dark theme
+  primary: '#F5F1E8',
+  primaryLight: '#FAF8F3',
+  primaryDark: '#E8E0D0',
+  gold: '#D8BFD8',
+  goldLight: '#E6D8E6',
+  goldDark: '#C8A2C8',
   
-  // Navy colors
-  navy: '#2A3A5C',
-  navyLight: '#3A4A6C',
-  navyDark: '#1A2438',
+  // Navy colors (now used as accents)
+  navy: '#F5F1E8',
+  navyLight: '#FAF8F3',
+  navyDark: '#E8E0D0',
   
-  // Status colors
-  success: '#8FAF9A',
-  warning: '#E5A853',
-  error: '#E87A7A',
-  info: '#5D7388',
+  // Status colors - enhanced for dark mode with cooler tones
+  success: '#4A9D6F',
+  warning: '#D4A574',
+  error: '#8B2635',
+  info: '#5B8FA3',
   
-  // UI colors
-  border: 'rgba(250, 248, 243, 0.12)',
-  borderLight: 'rgba(250, 248, 243, 0.06)',
-  shadow: 'rgba(0, 0, 0, 0.3)',
-  overlay: 'rgba(0, 0, 0, 0.6)',
+  // UI colors - enhanced glassmorphism for dark mode
+  border: 'rgba(245, 241, 232, 0.15)',
+  borderLight: 'rgba(245, 241, 232, 0.08)',
+  shadow: 'rgba(0, 0, 0, 0.4)',
+  overlay: 'rgba(15, 22, 32, 0.8)',
   blurTint: 'dark',
 };
 
@@ -101,19 +101,19 @@ export const typography: TypographyTheme = {
   size4xl: 36,
 };
 
-// For large touch targets suitable for 60+ users
+// For touch targets suitable for all ages
 export const touchTargets = {
-  small: 44,
-  medium: 56,
-  large: 72,
-  xlarge: 88,
+  small: 40,
+  medium: 48,
+  large: 56,
+  xlarge: 64,
 };
 
 export const borderRadius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  '2xl': 32,
+  sm: 12,
+  md: 16,
+  lg: 20,
+  xl: 28,
+  '2xl': 36,
   full: 9999,
 };
