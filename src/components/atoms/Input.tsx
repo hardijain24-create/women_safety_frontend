@@ -93,7 +93,7 @@ export const Input: React.FC<InputProps> = ({
       {error && (
         <Typography 
           variant="caption" 
-          color="error" 
+          color="muted" 
           style={{ marginTop: 6, marginLeft: 4 }}
         >
           {error}

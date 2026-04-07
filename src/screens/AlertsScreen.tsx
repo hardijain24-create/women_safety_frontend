@@ -28,7 +28,7 @@ export const AlertsScreen: React.FC = () => {
         {/* Summary Cards */}
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
           <Card variant="glass" padding="medium" style={{ flex: 1 }}>
-            <Typography variant="h2" color="error" align="center">
+            <Typography variant="h2" color="muted" align="center">
               {criticalCount}
             </Typography>
             <Typography variant="caption" color="muted" align="center">
@@ -36,7 +36,7 @@ export const AlertsScreen: React.FC = () => {
             </Typography>
           </Card>
           <Card variant="glass" padding="medium" style={{ flex: 1 }}>
-            <Typography variant="h2" color="warning" align="center">
+            <Typography variant="h2" color="muted" align="center">
               {highCount}
             </Typography>
             <Typography variant="caption" color="muted" align="center">

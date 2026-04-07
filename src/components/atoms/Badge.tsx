@@ -60,7 +60,7 @@ export const Badge: React.FC<BadgeProps> = ({
       {icon && <View style={{ marginRight: 6 }}>{icon}</View>}
       <Typography
         variant={textSizes[size]}
-        color={variant === 'gold' ? 'gold' : variant === 'error' ? 'error' : variant === 'success' ? 'secondary' : 'secondary'}
+        color={variant === 'gold' ? 'gold' : 'secondary'}
         weight="600"
       >
         {label}

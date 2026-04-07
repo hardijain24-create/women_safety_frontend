@@ -118,7 +118,7 @@ export const LocationScreen: React.FC = () => {
                     marginRight: 8,
                   }}
                 />
-                <Typography variant="body" color="success" weight="600">
+                <Typography variant="body" color="muted" weight="600">
                   Sharing Active
                 </Typography>
               </View>
@@ -147,7 +147,7 @@ export const LocationScreen: React.FC = () => {
         {/* GPS Status */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="location-pin" size={20} color={theme.colors.success} />
-          <Typography variant="bodySmall" color="success" style={{ marginLeft: 8 }}>
+          <Typography variant="bodySmall" color="muted" style={{ marginLeft: 8 }}>
             GPS Signal Strong
           </Typography>
         </View>
