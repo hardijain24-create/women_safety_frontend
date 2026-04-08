@@ -5,7 +5,7 @@ import { Typography } from './Typography';
 
 interface BadgeProps {
   label: string;
-  variant?: 'primary' | 'success' | 'warning' | 'error' | 'neutral' | 'gold';
+  variant?: 'primary' | 'success' | 'warning' | 'error' | 'neutral' | 'gold' | 'lilac';
   size?: 'small' | 'medium' | 'large';
   icon?: React.ReactNode;
 }
@@ -25,21 +25,23 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: theme.colors.navy + '20' },
+    primary: { backgroundColor: theme.colors.primary + '20' },
     success: { backgroundColor: theme.colors.success + '30' },
     warning: { backgroundColor: theme.colors.warning + '30' },
     error: { backgroundColor: theme.colors.error + '20' },
     neutral: { backgroundColor: theme.colors.border },
     gold: { backgroundColor: theme.colors.gold + '25' },
+    lilac: { backgroundColor: theme.colors.gold + '20' },
   };
 
   const textColors = {
-    primary: theme.colors.navy,
+    primary: theme.colors.primary,
     success: theme.colors.success,
     warning: theme.colors.warning,
     error: theme.colors.error,
     neutral: theme.colors.textSecondary,
     gold: theme.colors.goldDark,
+    lilac: theme.colors.goldDark,
   };
 
   const textSizes = {
@@ -60,8 +62,9 @@ export const Badge: React.FC<BadgeProps> = ({
       {icon && <View style={{ marginRight: 6 }}>{icon}</View>}
       <Typography
         variant={textSizes[size]}
-        color={variant === 'gold' ? 'gold' : 'secondary'}
+        color={variant === 'gold' || variant === 'lilac' ? 'secondary' : 'secondary'}
         weight="600"
+        style={{ color: textColors[variant] }}
       >
         {label}
       </Typography>

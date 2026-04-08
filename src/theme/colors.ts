@@ -7,7 +7,7 @@ export const lightColors: ColorTheme = {
   card: '#FAFAFA',
   cardGlass: 'rgba(250, 250, 250, 0.9)',
   
-  // Text colors - High contrast
+  // Text colors - Black for visibility on light background
   textPrimary: '#1A1F2E',
   textSecondary: '#2D3748',
   textMuted: '#4A5568',

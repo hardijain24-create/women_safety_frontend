@@ -19,12 +19,38 @@ export const RegisterScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{phone?: string; password?: string; confirmPassword?: string}>({});
+
+  const validateForm = () => {
+    const newErrors: {phone?: string; password?: string; confirmPassword?: string} = {};
+    
+    // Phone validation
+    if (!phone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\+?[\d\s-()]+$/.test(phone)) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    // Password validation (8+ characters)
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    // Confirm password validation
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
     // Simulate registration
@@ -58,24 +84,36 @@ export const RegisterScreen: React.FC = () => {
             <Input
               label="Phone Number"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(text) => {
+                setPhone(text);
+                if (errors.phone) setErrors({...errors, phone: undefined});
+              }}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
               maxLength={15}
+              error={errors.phone}
             />
             <Input
               label="Password"
               value={password}
-              onChangeText={setPassword}
-              placeholder="Create a password"
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errors.password) setErrors({...errors, password: undefined});
+              }}
+              placeholder="Create a password (min 8 characters)"
               secureTextEntry
+              error={errors.password}
             />
             <Input
               label="Confirm Password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                if (errors.confirmPassword) setErrors({...errors, confirmPassword: undefined});
+              }}
               placeholder="Confirm your password"
               secureTextEntry
+              error={errors.confirmPassword}
             />
           </View>
 

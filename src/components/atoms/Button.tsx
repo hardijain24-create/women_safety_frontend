@@ -81,7 +81,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const textColors = {
-    primary: theme.colors.background,
+    primary: theme.colors.card,
     secondary: theme.colors.background,
     outline: theme.colors.primary,
     ghost: theme.colors.primary,

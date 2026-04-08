@@ -53,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={onBack}
             size="medium"
             variant="outlined"
+            color="#FFFFFF"
           />
         ) : showMenu ? (
           <IconButton
@@ -60,17 +61,18 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={handleMenuPress}
             size="medium"
             variant="outlined"
+            color="#FFFFFF"
           />
         ) : (
           <View style={{ width: 56 }} />
         )}
 
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Typography variant="h4" color="primary" align="center">
+          <Typography variant="h4" color="inverse" align="center" style={{ color: '#FFFFFF' }}>
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="caption" color="muted" align="center">
+            <Typography variant="caption" color="muted" align="center" style={{ color: '#E8E0D0' }}>
               {subtitle}
             </Typography>
           )}
@@ -82,6 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={rightAction.onPress}
             size="medium"
             variant="outlined"
+            color="#FFFFFF"
           />
         ) : (
           <View style={{ width: 56 }} />

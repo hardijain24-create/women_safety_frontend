@@ -19,8 +19,32 @@ export const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
+
+  const validateForm = () => {
+    const newErrors: {email?: string; password?: string} = {};
+    
+    // Email validation
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    // Password validation (8+ characters)
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleLogin = async () => {
+    if (!validateForm()) return;
+    
     setIsLoading(true);
     // Simulate login
     setTimeout(() => {
@@ -70,17 +94,25 @@ export const LoginScreen: React.FC = () => {
             <Input
               label="Email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (errors.email) setErrors({...errors, email: undefined});
+              }}
               placeholder="Enter your email"
               keyboardType="email-address"
               autoCapitalize="none"
+              error={errors.email}
             />
             <Input
               label="Password"
               value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errors.password) setErrors({...errors, password: undefined});
+              }}
+              placeholder="Enter your password (min 8 characters)"
               secureTextEntry
+              error={errors.password}
             />
           </View>
 

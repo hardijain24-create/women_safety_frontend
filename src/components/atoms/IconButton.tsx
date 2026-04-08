@@ -49,7 +49,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   const getIconColor = () => {
     if (color) return color;
     if (variant === 'filled') return theme.colors.textInverse;
-    return theme.colors.navy;
+    return theme.colors.textSecondary;
   };
 
   const buttonStyle: ViewStyle = {
@@ -60,7 +60,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: variant === 'outlined' ? 2 : 0,
-    borderColor: theme.colors.navy,
+    borderColor: color || '#FFFFFF',
     opacity: disabled ? 0.5 : 1,
   };
 
