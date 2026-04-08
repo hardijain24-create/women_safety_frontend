@@ -15,14 +15,22 @@ type RegisterNavigationProp = StackNavigationProp<AuthStackParamList, typeof ROU
 export const RegisterScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<RegisterNavigationProp>();
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{phone?: string; password?: string; confirmPassword?: string}>({});
+  const [errors, setErrors] = useState<{name?: string; phone?: string; password?: string; confirmPassword?: string}>({});
 
   const validateForm = () => {
-    const newErrors: {phone?: string; password?: string; confirmPassword?: string} = {};
+    const newErrors: {name?: string; phone?: string; password?: string; confirmPassword?: string} = {};
+    
+    // Name validation
+    if (!name) {
+      newErrors.name = 'Name is required';
+    } else if (name.length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
     
     // Phone validation
     if (!phone) {
@@ -81,6 +89,17 @@ export const RegisterScreen: React.FC = () => {
 
           {/* Form */}
           <View style={{ marginBottom: 32 }}>
+            <Input
+              label="Full Name"
+              value={name}
+              onChangeText={(text) => {
+                setName(text);
+                if (errors.name) setErrors({...errors, name: undefined});
+              }}
+              placeholder="Enter your full name"
+              autoCapitalize="words"
+              error={errors.name}
+            />
             <Input
               label="Phone Number"
               value={phone}
