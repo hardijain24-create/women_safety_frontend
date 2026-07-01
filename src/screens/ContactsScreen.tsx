@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Alert, Modal, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Alert, Modal, ActivityIndicator } from 'react-native';
 import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
@@ -8,12 +8,13 @@ import { Input } from '../components/atoms/Input';
 import { ContactCard } from '../components/molecules/ContactCard';
 import { Card } from '../components/molecules/Card';
 import { ScreenLayout, Header } from '../components/organisms/Header';
-import { mockEmergencyContacts } from '../constants';
+import { userApi } from '../api/services';
 import type { EmergencyContact } from '../types';
 
 export const ContactsScreen: React.FC = () => {
   const { theme } = useTheme();
-  const [contacts, setContacts] = useState<EmergencyContact[]>(mockEmergencyContacts);
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newContact, setNewContact] = useState({
     name: '',
@@ -22,25 +23,61 @@ export const ContactsScreen: React.FC = () => {
     relation: '',
   });
 
-  const handleAddContact = () => {
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true);
+      const response = await userApi.getProfile();
+      if (response.success && response.data.emergency_contacts) {
+        setContacts(response.data.emergency_contacts);
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      Alert.alert('Error', 'Failed to load emergency contacts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddContact = async () => {
+    // Basic validation
     if (!newContact.name || !newContact.phone) {
       Alert.alert('Error', 'Name and phone are required');
       return;
     }
 
-    const contact: EmergencyContact = {
-      id: Date.now().toString(),
-      name: newContact.name,
-      phone: newContact.phone,
-      email: newContact.email,
-      relation: newContact.relation || 'Contact',
-      isPrimary: false,
-    };
+    // Sanitize phone number (remove spaces, dashes, etc.)
+    const sanitizedPhone = newContact.phone.replace(/\D/g, '');
 
-    setContacts([...contacts, contact]);
-    setNewContact({ name: '', phone: '', email: '', relation: '' });
-    setIsModalVisible(false);
-    Alert.alert('Success', 'Contact added successfully');
+    // Strict validation feedback to match backend
+    if (sanitizedPhone.length < 10 || sanitizedPhone.length > 15) {
+      Alert.alert('Invalid Phone', 'Phone number must be between 10 and 15 digits.');
+      return;
+    }
+
+    try {
+      const response = await userApi.addContact({
+        contact: {
+          name: newContact.name.trim(),
+          phone: sanitizedPhone, // already sanitized
+          email: newContact.email.trim() || undefined,
+          relation: newContact.relation.trim() || undefined,
+        }
+      });
+
+      if (response.success) {
+        setContacts(response.data.emergency_contacts);
+        setNewContact({ name: '', phone: '', email: '', relation: '' });
+        setIsModalVisible(false);
+        Alert.alert('Success', 'Contact added successfully');
+      }
+    } catch (error) {
+      console.error('Error adding contact:', error);
+      Alert.alert('Error', 'Failed to add contact. Please ensure the phone number is valid.');
+    }
   };
 
   const handleDeleteContact = (id: string) => {
@@ -52,13 +89,33 @@ export const ContactsScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setContacts(contacts.filter(c => c.id !== id));
+          onPress: async () => {
+            try {
+              const response = await userApi.deleteContact(id);
+              if (response.success) {
+                setContacts(response.data.emergency_contacts);
+              }
+            } catch (error) {
+              console.error('Error deleting contact:', error);
+              Alert.alert('Error', 'Failed to delete contact');
+            }
           },
         },
       ]
     );
   };
+
+  if (loading) {
+    return (
+      <ScreenLayout
+        header={<Header title="Emergency Contacts" subtitle="Loading..." />}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 400 }}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      </ScreenLayout>
+    );
+  }
 
   return (
     <ScreenLayout
@@ -74,32 +131,13 @@ export const ContactsScreen: React.FC = () => {
       }
     >
       <View style={{ paddingBottom: 32 }}>
-        {/* Primary Contact Highlight */}
-        {contacts.find(c => c.isPrimary) && (
-          <Card
-            variant="elevated"
-            padding="large"
-            style={{ marginBottom: 24, backgroundColor: theme.colors.gold + '15' }}
-          >
-            <Typography variant="bodySmall" color="gold" weight="600" style={{ marginBottom: 8 }}>
-              PRIMARY CONTACT
-            </Typography>
-            <Typography variant="h4" color="primary">
-              {contacts.find(c => c.isPrimary)?.name}
-            </Typography>
-            <Typography variant="body" color="secondary">
-              {contacts.find(c => c.isPrimary)?.phone}
-            </Typography>
-          </Card>
-        )}
-
         {/* Contacts List */}
         <View style={{ gap: 12 }}>
           {contacts.map(contact => (
             <ContactCard
               key={contact.id}
               contact={contact}
-              onDelete={() => handleDeleteContact(contact.id)}
+              onDelete={() => handleDeleteContact(contact.id!)}
             />
           ))}
         </View>

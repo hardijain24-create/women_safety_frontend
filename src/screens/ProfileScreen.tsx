@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
-import { View, Alert, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Alert } from 'react-native';
 import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
 import { Toggle } from '../components/atoms/Toggle';
-import { Icon } from '../components/atoms/Icon';
 import { Card } from '../components/molecules/Card';
 import { ScreenLayout, Header } from '../components/organisms/Header';
-import { mockUserProfile } from '../constants';
+import { AuthContext } from '../context/AuthContext';
 
 export const ProfileScreen: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
-  const navigation = useNavigation();
+  const { user, logout } = React.useContext(AuthContext);
   
-  const [profile, setProfile] = useState(mockUserProfile);
-  const [autoCheckIn, setAutoCheckIn] = useState(profile.autoCheckInEnabled);
-  const [vibrationEnabled, setVibrationEnabled] = useState(profile.vibrationEnabled);
-  const [alarmEnabled, setAlarmEnabled] = useState(profile.alarmEnabled);
-  const [autoConnect, setAutoConnect] = useState(profile.autoConnectBand);
+  // Default values if user fields are missing
+  const profileName = user?.name || 'User';
+  const profileEmail = user?.email || '';
+  
+  const [autoCheckIn, setAutoCheckIn] = useState(true);
+  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [alarmEnabled, setAlarmEnabled] = useState(true);
+  const [autoConnect, setAutoConnect] = useState(true);
 
   const handleLogout = () => {
     Alert.alert(
@@ -29,7 +30,7 @@ export const ProfileScreen: React.FC = () => {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => navigation.navigate('Auth' as never),
+          onPress: () => logout(),
         },
       ]
     );
@@ -55,17 +56,14 @@ export const ProfileScreen: React.FC = () => {
               }}
             >
               <Typography variant="h2" color="inverse">
-                {profile.name.charAt(0)}
+                {profileName.charAt(0).toUpperCase()}
               </Typography>
             </View>
             <Typography variant="h3" color="primary" style={{ marginBottom: 4 }}>
-              {profile.name}
+              {profileName}
             </Typography>
             <Typography variant="body" color="muted">
-              {profile.email}
-            </Typography>
-            <Typography variant="bodySmall" color="secondary" style={{ marginTop: 4 }}>
-              {profile.phone}
+              {profileEmail}
             </Typography>
           </View>
         </Card>
@@ -135,7 +133,7 @@ export const ProfileScreen: React.FC = () => {
             Emergency Message
           </Typography>
           <Typography variant="body" color="secondary">
-            "{profile.emergencyMessage}"
+            "Help! I need emergency assistance. Please contact me immediately."
           </Typography>
           <Button
             title="Edit Message"

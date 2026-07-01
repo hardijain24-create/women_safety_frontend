@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, Text, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../theme';
 
 interface IconProps {
@@ -70,18 +70,20 @@ export const Icon: React.FC<IconProps> = ({
     ...containerStyle,
   };
 
-  const textStyle = {
+  const textStyle: TextStyle = {
     fontSize: size,
     color: defaultColor,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     lineHeight: size * 1.2,
+    textAlign: 'center',
   };
 
   return (
     <View style={wrapperStyle}>
-      <View style={textStyle}>
+      <Text style={textStyle}>
         {iconMap[name] || '?'}
-      </View>
+      </Text>
     </View>
   );
 };
+

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTheme } from '../theme';
@@ -9,6 +9,7 @@ import { Input } from '../components/atoms/Input';
 import { ScreenLayout } from '../components/organisms/Header';
 import { ROUTES } from '../constants';
 import { AuthStackParamList } from '../navigation';
+import { AuthContext } from '../context/AuthContext';
 
 type LoginNavigationProp = StackNavigationProp<AuthStackParamList, typeof ROUTES.LOGIN>;
 
@@ -20,13 +21,23 @@ export const LoginScreen: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { login } = React.useContext(AuthContext);
+
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+    
     setIsLoading(true);
-    // Simulate login
-    setTimeout(() => {
+    try {
+      await login({ email, password });
+      // Navigation to Main is handled automatically by AuthContext state change in Navigation.tsx
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message || 'Something went wrong. Please try again.');
+    } finally {
       setIsLoading(false);
-      navigation.navigate('Main' as never);
-    }, 1000);
+    }
   };
 
   const handleRegister = () => {

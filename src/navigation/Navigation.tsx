@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator, StackNavigationOptions } from '@react-navigation/stack';
 import { createBottomTabNavigator, BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme';
 import { Icon } from '../components/atoms/Icon';
 import { ROUTES } from '../constants';
+import { AuthContext } from '../context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
 
 // Auth Screens
 import { LoginScreen } from '../screens/LoginScreen';
@@ -138,6 +140,7 @@ const MainTabNavigator: React.FC = () => {
 
 export const Navigation: React.FC = () => {
   const { theme } = useTheme();
+  const { userToken, isLoading } = useContext(AuthContext);
 
   const navigationTheme = {
     ...(theme.isDark ? DarkTheme : DefaultTheme),
@@ -152,16 +155,29 @@ export const Navigation: React.FC = () => {
     },
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.gold} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer theme={navigationTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="Auth" component={AuthStackNavigator} />
-        <RootStack.Screen name="Main" component={MainTabNavigator} />
-        <RootStack.Screen 
-          name={ROUTES.SOS} 
-          component={SOSScreen}
-          options={{ presentation: 'modal' }}
-        />
+        {userToken == null ? (
+          <RootStack.Screen name="Auth" component={AuthStackNavigator} />
+        ) : (
+          <>
+            <RootStack.Screen name="Main" component={MainTabNavigator} />
+            <RootStack.Screen 
+              name={ROUTES.SOS} 
+              component={SOSScreen}
+              options={{ presentation: 'modal' }}
+            />
+          </>
+        )}
       </RootStack.Navigator>
     </NavigationContainer>
   );

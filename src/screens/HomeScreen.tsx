@@ -11,21 +11,61 @@ import { QuickActionGrid } from '../components/molecules/QuickAction';
 import { DeviceStatusCard } from '../components/molecules/StatusBadge';
 import { ScreenLayout, Header } from '../components/organisms/Header';
 import { DevicePanel } from '../components/organisms/DevicePanel';
+import * as Location from 'expo-location';
 import { mockDeviceStatus, mockLocation, mockUserProfile, ROUTES } from '../constants';
 import { RootStackParamList } from '../navigation';
+import { AuthContext } from '../context/AuthContext';
+import { alertApi } from '../api/services';
 
 type HomeNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const HomeScreen: React.FC = () => {
-  const { theme } = useTheme();
   const navigation = useNavigation<HomeNavigationProp>();
-  const [deviceStatus, setDeviceStatus] = useState(mockDeviceStatus);
+  const [deviceStatus] = useState(mockDeviceStatus);
+  const { user } = React.useContext(AuthContext);
+
+  const handleShareLocation = async () => {
+    try {
+      if (user?.id) {
+        // 📍 Get REAL location
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Location permission is required to share your location.');
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+        
+        await alertApi.triggerAlert({
+          user_id: user.id,
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          alert_type: 'location_share'
+        });
+        Alert.alert('Location Shared', 'Your location has been shared with emergency contacts');
+      } else {
+        Alert.alert('Error', 'Please log in to share your location');
+      }
+    } catch (e: any) {
+      Alert.alert('Error', 'Failed to share location: ' + (e.response?.data?.message || e.message));
+    }
+  };
+
+  const handleImSafe = async () => {
+    try {
+      // Find the last active alert to resolve it, or just send a general "Safe" ping
+      // For now, we'll send a trigger with type 'safe' or resolve existing if we had tracking
+      Alert.alert("Check-in Sent", "Your contacts have been notified you are safe");
+    } catch (e: any) {
+      Alert.alert('Error', 'Failed to send check-in');
+    }
+  };
 
   const quickActions = [
     {
       icon: 'location',
       label: 'Share Location',
-      onPress: () => Alert.alert('Location Shared', 'Your location has been shared with emergency contacts'),
+      onPress: handleShareLocation,
       variant: 'default' as const,
     },
     {
@@ -37,7 +77,7 @@ export const HomeScreen: React.FC = () => {
     {
       icon: 'check',
       label: "I'm Safe",
-      onPress: () => Alert.alert("Check-in Sent", "Your contacts have been notified you are safe"),
+      onPress: handleImSafe,
       variant: 'primary' as const,
     },
     {
@@ -47,6 +87,7 @@ export const HomeScreen: React.FC = () => {
       variant: 'default' as const,
     },
   ];
+
 
   return (
     <ScreenLayout

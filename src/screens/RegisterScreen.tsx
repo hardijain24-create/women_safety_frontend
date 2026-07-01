@@ -1,37 +1,42 @@
 import React, { useState } from 'react';
 import { View, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
 import { Input } from '../components/atoms/Input';
 import { ScreenLayout, Header } from '../components/organisms/Header';
-import { ROUTES } from '../constants';
-import { AuthStackParamList } from '../navigation';
-
-type RegisterNavigationProp = StackNavigationProp<AuthStackParamList, typeof ROUTES.REGISTER>;
+import { AuthContext } from '../context/AuthContext';
 
 export const RegisterScreen: React.FC = () => {
-  const { theme } = useTheme();
-  const navigation = useNavigation<RegisterNavigationProp>();
-  const [phone, setPhone] = useState('');
+  const navigation = useNavigation<any>();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const { register } = React.useContext(AuthContext);
+
   const handleRegister = async () => {
+    if (!name || !email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     setIsLoading(true);
-    // Simulate registration
-    setTimeout(() => {
+    try {
+      await register({ name, email, password });
+      // Navigation to Main is handled automatically by AuthContext state change in Navigation.tsx
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message || 'Something went wrong. Please try again.');
+    } finally {
       setIsLoading(false);
-      navigation.navigate(ROUTES.LOGIN);
-    }, 1000);
+    }
   };
 
   return (
@@ -56,12 +61,18 @@ export const RegisterScreen: React.FC = () => {
           {/* Form */}
           <View style={{ marginBottom: 32 }}>
             <Input
-              label="Phone Number"
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Enter your phone number"
-              keyboardType="phone-pad"
-              maxLength={15}
+              label="Name"
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter your full name"
+            />
+            <Input
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
             <Input
               label="Password"
@@ -77,6 +88,9 @@ export const RegisterScreen: React.FC = () => {
               placeholder="Confirm your password"
               secureTextEntry
             />
+            <Typography variant="caption" color="muted" style={{ marginTop: -8, marginBottom: 16 }}>
+              Hint: 8+ characters, uppercase, lowercase, and a number.
+            </Typography>
           </View>
 
           {/* Register Button */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, Animated, Vibration, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -7,6 +7,10 @@ import { Typography } from '../components/atoms/Typography';
 import { Icon } from '../components/atoms/Icon';
 import { Card } from '../components/molecules/Card';
 import * as Haptics from 'expo-haptics';
+import { AuthContext } from '../context/AuthContext';
+import { alertApi } from '../api/services';
+import * as Location from 'expo-location';
+import { mockLocation } from '../constants/mockData';
 
 export const SOSScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -16,7 +20,6 @@ export const SOSScreen: React.FC = () => {
   const [alertSent, setAlertSent] = useState(false);
   
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (isHolding && !alertSent) {
@@ -57,25 +60,53 @@ export const SOSScreen: React.FC = () => {
       if (!alertSent) {
         setProgress(0);
       }
+      return undefined;
     }
   }, [isHolding, alertSent]);
 
-  const triggerSOS = async () => {
-    setAlertSent(true);
-    setIsHolding(false);
-    
-    // Vibration pattern (SOS in Morse: ... --- ...)
-    Vibration.vibrate([200, 100, 200, 100, 200, 300, 600, 100, 600, 100, 600, 300, 200, 100, 200, 100, 200], true);
-    
-    // Haptic feedback
-    if (await Haptics.isAvailableAsync()) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
+  const { user } = useContext(AuthContext);
 
-    // Show success
-    setTimeout(() => {
-      Vibration.cancel();
-    }, 3000);
+  const triggerSOS = async () => {
+    try {
+      if (user?.id) {
+        // 📍 Get REAL location
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Location permission is required to send SOS.');
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+
+        await alertApi.triggerAlert({
+          user_id: user.id,
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      } else {
+        console.warn("User not found, proceeding with local SOS actions.");
+      }
+
+      setAlertSent(true);
+      setIsHolding(false);
+      
+      // Vibration pattern (SOS in Morse: ... --- ...)
+      Vibration.vibrate([200, 100, 200, 100, 200, 300, 600, 100, 600, 100, 600, 300, 200, 100, 200, 100, 200], true);
+      
+      // Haptic feedback
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } catch (_) {}
+
+      // Show success
+      setTimeout(() => {
+        Vibration.cancel();
+      }, 3000);
+    } catch (e: any) {
+      Alert.alert('Error', 'Failed to send SOS: ' + (e.response?.data?.message || e.message));
+      setProgress(0);
+      setIsHolding(false);
+    }
   };
 
   const handleDismiss = () => {
@@ -206,7 +237,7 @@ export const SOSScreen: React.FC = () => {
 
       <Typography
         variant="body"
-        color={isHolding ? 'error' : 'muted'}
+        color={isHolding ? 'primary' : 'muted'}
         align="center"
         style={{ marginTop: 48 }}
       >

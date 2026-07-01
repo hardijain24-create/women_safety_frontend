@@ -1,19 +1,48 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { useTheme } from '../theme';
 import { Typography } from '../components/atoms/Typography';
 import { Badge } from '../components/atoms/Badge';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { Card } from '../components/molecules/Card';
 import { ScreenLayout, Header } from '../components/organisms/Header';
-import { mockAlerts } from '../constants';
+import { alertApi } from '../api/services';
+import type { AlertItem } from '../types';
 
 export const AlertsScreen: React.FC = () => {
   const { theme } = useTheme();
-  const unreadCount = mockAlerts.filter(a => !a.isRead).length;
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const criticalCount = mockAlerts.filter(a => a.severity === 'critical').length;
-  const highCount = mockAlerts.filter(a => a.severity === 'high').length;
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await alertApi.getAlerts();
+      if (response && response.success && Array.isArray(response.data)) {
+        const mappedAlerts: AlertItem[] = response.data.map((a: any) => ({
+          id: String(a._id || a.id),
+          type: 'sos',
+          title: 'SOS Emergency Alert',
+          message: `Location: ${Number(a.latitude).toFixed(4)}, ${Number(a.longitude).toFixed(4)} - Status: ${a.status}`,
+          timestamp: String(a.created_at || new Date().toISOString()),
+          isRead: a.status === 'resolved',
+          severity: a.status === 'active' ? 'critical' : 'high',
+        }));
+        setAlerts(mappedAlerts);
+      }
+    } catch (e) {
+      console.log('Failed to fetch alerts', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const unreadCount = alerts.filter((a: AlertItem) => !a.isRead).length;
+  const criticalCount = alerts.filter((a: AlertItem) => a.severity === 'critical').length;
+  const highCount = alerts.filter((a: AlertItem) => a.severity === 'high').length;
 
   return (
     <ScreenLayout
@@ -67,19 +96,22 @@ export const AlertsScreen: React.FC = () => {
           Recent Alerts
         </Typography>
 
-        <View style={{ gap: 12 }}>
-          {mockAlerts.map(alert => (
-            <AlertCard key={alert.id} alert={alert} />
-          ))}
-        </View>
-
-        {/* Empty State */}
-        {mockAlerts.length === 0 && (
-          <Card variant="outlined" padding="large" style={{ alignItems: 'center' }}>
-            <Typography variant="body" color="muted" align="center">
-              No alerts yet. Stay safe!
-            </Typography>
-          </Card>
+        {isLoading ? (
+          <ActivityIndicator size="large" color={theme.colors.gold} style={{ marginTop: 24 }} />
+        ) : (
+          <View style={{ gap: 12 }}>
+            {alerts.length > 0 ? (
+              alerts.map((alert: AlertItem) => (
+                <AlertCard key={alert.id} alert={alert} />
+              ))
+            ) : (
+              <Card variant="outlined" padding="large" style={{ alignItems: 'center' }}>
+                <Typography variant="body" color="muted" align="center">
+                  No alerts yet. Stay safe!
+                </Typography>
+              </Card>
+            )}
+          </View>
         )}
       </View>
     </ScreenLayout>
