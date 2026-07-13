@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         throw new Error(response.message || 'Login failed');
       }
+    } catch (error: any) {
+      let msg = error.response?.data?.message;
+      if (!msg && error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+      }
+      throw new Error(msg || error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -74,6 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         throw new Error(response.message || 'Registration failed');
       }
+    } catch (error: any) {
+      let msg = error.response?.data?.message;
+      if (!msg && error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+      }
+      throw new Error(msg || error.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

@@ -11,7 +11,7 @@ import { AuthContext } from '../context/AuthContext';
 import { alertApi } from '../api/services';
 import * as Location from 'expo-location';
 import { mockLocation } from '../constants/mockData';
-
+import { AlertTriggerService } from '../services/AlertTriggerService';
 export const SOSScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigation = useNavigation();
@@ -68,42 +68,12 @@ export const SOSScreen: React.FC = () => {
 
   const triggerSOS = async () => {
     try {
-      if (user?.id) {
-        // 📍 Get REAL location
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Location permission is required to send SOS.');
-          return;
-        }
-
-        const location = await Location.getCurrentPositionAsync({});
-
-        await alertApi.triggerAlert({
-          user_id: user.id,
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-      } else {
-        console.warn("User not found, proceeding with local SOS actions.");
-      }
-
+      await AlertTriggerService.triggerSOS(user);
+      
       setAlertSent(true);
       setIsHolding(false);
-      
-      // Vibration pattern (SOS in Morse: ... --- ...)
-      Vibration.vibrate([200, 100, 200, 100, 200, 300, 600, 100, 600, 100, 600, 300, 200, 100, 200, 100, 200], true);
-      
-      // Haptic feedback
-      try {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      } catch (_) {}
-
-      // Show success
-      setTimeout(() => {
-        Vibration.cancel();
-      }, 3000);
     } catch (e: any) {
-      Alert.alert('Error', 'Failed to send SOS: ' + (e.response?.data?.message || e.message));
+      Alert.alert('Error', 'Failed to send SOS: ' + e.message);
       setProgress(0);
       setIsHolding(false);
     }

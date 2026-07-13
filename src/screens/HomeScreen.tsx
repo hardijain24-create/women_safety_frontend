@@ -12,6 +12,7 @@ import { DeviceStatusCard } from '../components/molecules/StatusBadge';
 import { ScreenLayout, Header } from '../components/organisms/Header';
 import { DevicePanel } from '../components/organisms/DevicePanel';
 import * as Location from 'expo-location';
+import * as Battery from 'expo-battery';
 import { mockDeviceStatus, mockLocation, mockUserProfile, ROUTES } from '../constants';
 import { RootStackParamList } from '../navigation';
 import { AuthContext } from '../context/AuthContext';
@@ -21,8 +22,42 @@ type HomeNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigationProp>();
-  const [deviceStatus] = useState(mockDeviceStatus);
+  const [deviceStatus, setDeviceStatus] = useState(mockDeviceStatus);
   const { user } = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    let batterySubscription: Battery.Subscription;
+    let powerStateSubscription: Battery.Subscription;
+
+    const setupBattery = async () => {
+      const level = await Battery.getBatteryLevelAsync();
+      const state = await Battery.getBatteryStateAsync();
+      
+      setDeviceStatus(prev => ({
+        ...prev,
+        batteryLevel: Math.round(level * 100),
+        isCharging: state === Battery.BatteryState.CHARGING || state === Battery.BatteryState.FULL
+      }));
+
+      batterySubscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
+        setDeviceStatus(prev => ({ ...prev, batteryLevel: Math.round(batteryLevel * 100) }));
+      });
+
+      powerStateSubscription = Battery.addBatteryStateListener(({ batteryState }) => {
+        setDeviceStatus(prev => ({ 
+          ...prev, 
+          isCharging: batteryState === Battery.BatteryState.CHARGING || batteryState === Battery.BatteryState.FULL 
+        }));
+      });
+    };
+
+    setupBattery();
+
+    return () => {
+      if (batterySubscription) batterySubscription.remove();
+      if (powerStateSubscription) powerStateSubscription.remove();
+    };
+  }, []);
 
   const handleShareLocation = async () => {
     try {
