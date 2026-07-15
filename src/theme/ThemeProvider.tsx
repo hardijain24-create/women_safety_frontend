@@ -1,7 +1,25 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { ThemeContext } from './ThemeContext';
-import { lightColors, darkColors, spacing, typography } from './colors';
+import { 
+  lightColors, 
+  darkColors, 
+  spacing, 
+  typography, 
+  zIndex, 
+  opacity, 
+  iconSizes, 
+  avatarSizes, 
+  card, 
+  buttonSizes, 
+  animation, 
+  blur, 
+  lightGradients, 
+  darkGradients, 
+  status, 
+  layout, 
+  hero 
+} from './colors';
 import type { Theme, ThemeMode } from '../types';
 
 interface ThemeProviderProps {
@@ -24,6 +42,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     spacing,
     typography,
     isDark,
+    zIndex,
+    opacity,
+    iconSizes,
+    avatarSizes,
+    card,
+    buttonSizes,
+    animation,
+    blur,
+    gradients: isDark ? darkGradients : lightGradients,
+    status,
+    layout,
+    hero,
   }), [isDark]);
 
   const toggleTheme = useCallback(() => {

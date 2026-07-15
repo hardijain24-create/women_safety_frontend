@@ -1,9 +1,14 @@
-import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withRepeat, 
+  withTiming 
+} from 'react-native-reanimated';
 import { useTheme } from '../../theme';
 import { Icon } from '../atoms/Icon';
 import { Typography } from '../atoms/Typography';
-import { Badge } from '../atoms/Badge';
 import { Card } from './Card';
 
 interface StatusBadgeProps {
@@ -23,31 +28,71 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 }) => {
   const { theme } = useTheme();
 
+  // Connected status maps to calming primary safety green
   const statusColors = {
-    connected: theme.colors.success,
-    disconnected: theme.colors.textMuted,
-    warning: theme.colors.warning,
-    error: theme.colors.error,
-    success: theme.colors.success,
+    connected: theme.status.connected,
+    disconnected: theme.status.offline,
+    warning: theme.status.connecting,
+    error: theme.status.danger,
+    success: theme.status.connected,
   };
 
-  const dotSize = size === 'small' ? 8 : size === 'medium' ? 12 : 16;
-  const iconSize = size === 'small' ? 14 : size === 'medium' ? 20 : 26;
+  const dotSize = size === 'small' ? theme.spacing.sm : size === 'medium' ? theme.spacing.sm + 4 : theme.spacing.md;
+  const iconSize = size === 'small' ? theme.iconSizes.xs : size === 'medium' ? theme.iconSizes.sm : theme.iconSizes.lg;
   const textVariant = size === 'small' ? 'caption' : size === 'medium' ? 'bodySmall' : 'body';
+
+  const pulseOpacity = useSharedValue(0.4);
+  const pulseScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (!showPulse) return;
+    // Premium breathing pulse animation loop
+    pulseOpacity.value = withRepeat(
+      withTiming(0, { duration: 1800 }),
+      -1,
+      false
+    );
+    pulseScale.value = withRepeat(
+      withTiming(2.2, { duration: 1800 }),
+      -1,
+      false
+    );
+  }, [showPulse]);
+
+  const animatedPulseStyle = useAnimatedStyle(() => ({
+    opacity: pulseOpacity.value,
+    transform: [{ scale: pulseScale.value }],
+  }));
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      {showPulse && (
-        <View
-          style={{
-            width: dotSize,
-            height: dotSize,
-            borderRadius: dotSize / 2,
-            backgroundColor: statusColors[status],
-            marginRight: 8,
-          }}
-        />
-      )}
+      {showPulse ? (
+        <View style={{ width: dotSize * 2.2, height: dotSize * 2.2, justifyContent: 'center', alignItems: 'center', marginRight: 6 }}>
+          {/* Animated pulse ring */}
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                width: dotSize,
+                height: dotSize,
+                borderRadius: dotSize / 2,
+                backgroundColor: statusColors[status],
+              },
+              animatedPulseStyle,
+            ]}
+          />
+          {/* Static core dot */}
+          <View
+            style={{
+              width: dotSize,
+              height: dotSize,
+              borderRadius: dotSize / 2,
+              backgroundColor: statusColors[status],
+            }}
+          />
+        </View>
+      ) : null}
+      
       {icon && (
         <View style={{ marginRight: 6 }}>
           <Icon name={icon} size={iconSize} color={statusColors[status]} />
@@ -66,6 +111,7 @@ interface DeviceStatusCardProps {
   icon: string;
   status?: 'good' | 'warning' | 'critical';
   subtitle?: string;
+  onPress?: () => void;
 }
 
 export const DeviceStatusCard: React.FC<DeviceStatusCardProps> = ({
@@ -74,23 +120,29 @@ export const DeviceStatusCard: React.FC<DeviceStatusCardProps> = ({
   icon,
   status = 'good',
   subtitle,
+  onPress,
 }) => {
   const { theme } = useTheme();
 
   const statusColors = {
-    good: theme.colors.success,
-    warning: theme.colors.warning,
-    critical: theme.colors.error,
+    good: theme.status.connected,
+    warning: theme.status.connecting,
+    critical: theme.status.danger,
   };
 
   return (
-    <Card variant="glass" padding="medium" style={{ flex: 1, minWidth: 140 }}>
+    <Card 
+      variant={onPress ? "interactive" : "glass"} 
+      padding="medium" 
+      style={{ flex: 1, minWidth: 140 }}
+      onPress={onPress}
+    >
       <View style={{ alignItems: 'center' }}>
         <Icon
           name={icon}
-          size={32}
+          size={28}
           color={statusColors[status]}
-          backgroundColor={statusColors[status] + '20'}
+          backgroundColor={statusColors[status] + '12'} // 7-8% opacity tint background
           containerStyle={{ marginBottom: 12 }}
         />
         <Typography variant="h4" color="primary" align="center">

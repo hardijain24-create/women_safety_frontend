@@ -5,3 +5,8 @@ export { Icon } from './Icon';
 export { Badge } from './Badge';
 export { Toggle } from './Toggle';
 export { IconButton } from './IconButton';
+export { Avatar } from './Avatar';
+export { Divider } from './Divider';
+export { Chip } from './Chip';
+export { Loader } from './Loader';
+export { ProgressRing } from './ProgressRing';

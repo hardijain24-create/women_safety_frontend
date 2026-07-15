@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, View, ViewStyle } from 'react-native';
+import { Switch, View } from 'react-native';
 import { useTheme } from '../../theme';
 import { Typography } from './Typography';
 
@@ -44,9 +44,9 @@ export const Toggle: React.FC<ToggleProps> = ({
           disabled={disabled}
           trackColor={{
             false: theme.colors.border,
-            true: theme.colors.gold + '80',
+            true: theme.colors.primary + '80',
           }}
-          thumbColor={value ? theme.colors.gold : theme.colors.textMuted}
+          thumbColor={value ? theme.colors.primary : theme.colors.textMuted}
           ios_backgroundColor={theme.colors.border}
         />
       </View>

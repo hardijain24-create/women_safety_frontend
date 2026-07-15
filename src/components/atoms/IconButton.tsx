@@ -1,12 +1,12 @@
 import React from 'react';
-import { TouchableOpacity, View, ViewStyle } from 'react-native';
+import { TouchableOpacity, ViewStyle } from 'react-native';
 import { useTheme } from '../../theme';
 import { Icon } from './Icon';
 
 interface IconButtonProps {
   icon: string;
   onPress: () => void;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';
   variant?: 'default' | 'filled' | 'outlined';
   color?: string;
   backgroundColor?: string;
@@ -24,32 +24,32 @@ export const IconButton: React.FC<IconButtonProps> = ({
 }) => {
   const { theme } = useTheme();
 
-  const sizes = {
-    small: 40,
-    medium: 56,
-    large: 72,
+  const getResolvedSizes = () => {
+    const isSm = size === 'small' || size === 'sm';
+    const isLg = size === 'large' || size === 'lg';
+
+    if (isSm) {
+      return { button: theme.buttonSizes.sm, icon: theme.iconSizes.sm };
+    }
+    if (isLg) {
+      return { button: theme.buttonSizes.hero, icon: theme.iconSizes.xl };
+    }
+    // Default to medium (lg button, lg icon)
+    return { button: theme.buttonSizes.lg, icon: theme.iconSizes.lg };
   };
 
-  const iconSizes = {
-    small: 20,
-    medium: 28,
-    large: 36,
-  };
-
-  const buttonSize = sizes[size];
-  const iconSize = iconSizes[size];
+  const { button: buttonSize, icon: iconSize } = getResolvedSizes();
 
   const getBackgroundColor = () => {
     if (backgroundColor) return backgroundColor;
-    if (variant === 'filled') return theme.colors.navy;
-    if (variant === 'outlined') return 'transparent';
+    if (variant === 'filled') return theme.colors.textPrimary;
     return 'transparent';
   };
 
   const getIconColor = () => {
     if (color) return color;
     if (variant === 'filled') return theme.colors.textInverse;
-    return theme.colors.navy;
+    return theme.colors.textPrimary;
   };
 
   const buttonStyle: ViewStyle = {
@@ -59,16 +59,16 @@ export const IconButton: React.FC<IconButtonProps> = ({
     backgroundColor: getBackgroundColor(),
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: variant === 'outlined' ? 2 : 0,
-    borderColor: theme.colors.navy,
-    opacity: disabled ? 0.5 : 1,
+    borderWidth: variant === 'outlined' ? 1.5 : 0,
+    borderColor: theme.colors.border,
+    opacity: disabled ? theme.opacity.disabled : 1,
   };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
+      activeOpacity={theme.opacity.pressed}
       style={buttonStyle}
     >
       <Icon name={icon} size={iconSize} color={getIconColor()} />

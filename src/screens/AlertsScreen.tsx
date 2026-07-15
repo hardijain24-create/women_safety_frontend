@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { Typography } from '../components/atoms/Typography';
-import { Badge } from '../components/atoms/Badge';
-import { AlertCard } from '../components/molecules/AlertCard';
+import { Icon } from '../components/atoms/Icon';
+import { Chip } from '../components/atoms/Chip';
+import { Loader } from '../components/atoms/Loader';
 import { Card } from '../components/molecules/Card';
+import { AlertCard } from '../components/molecules/AlertCard';
 import { ScreenLayout, Header } from '../components/organisms/Header';
 import { alertApi } from '../api/services';
 import type { AlertItem } from '../types';
@@ -13,107 +15,186 @@ export const AlertsScreen: React.FC = () => {
   const { theme } = useTheme();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Severity filter state
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const fetchAlerts = async () => {
     try {
+      setIsLoading(true);
       const response = await alertApi.getAlerts();
-      if (response && response.success && Array.isArray(response.data)) {
-        const mappedAlerts: AlertItem[] = response.data.map((a: any) => ({
-          id: String(a._id || a.id),
-          type: 'sos',
-          title: 'SOS Emergency Alert',
-          message: `Location: ${Number(a.latitude).toFixed(4)}, ${Number(a.longitude).toFixed(4)} - Status: ${a.status}`,
-          timestamp: String(a.created_at || new Date().toISOString()),
-          isRead: a.status === 'resolved',
-          severity: a.status === 'active' ? 'critical' : 'high',
-        }));
-        setAlerts(mappedAlerts);
+      if (response.success && response.data) {
+        setAlerts(response.data);
       }
-    } catch (e) {
-      console.log('Failed to fetch alerts', e);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const unreadCount = alerts.filter((a: AlertItem) => !a.isRead).length;
-  const criticalCount = alerts.filter((a: AlertItem) => a.severity === 'critical').length;
-  const highCount = alerts.filter((a: AlertItem) => a.severity === 'high').length;
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const response = await alertApi.getAlerts();
+      if (response.success && response.data) {
+        setAlerts(response.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
+
+  // Filter alerts by active severity category
+  const filteredAlerts = alerts.filter(alert => {
+    if (activeFilter === 'All') return true;
+    if (activeFilter === 'Critical') return alert.severity === 'critical' || alert.severity === 'high';
+    if (activeFilter === 'Warning') return alert.severity === 'medium';
+    if (activeFilter === 'System') return alert.severity === 'low';
+    return true;
+  });
+
+  // Grouping logic: Today vs This Week
+  const todayAlerts: AlertItem[] = [];
+  const thisWeekAlerts: AlertItem[] = [];
+
+  filteredAlerts.forEach(alert => {
+    const time = alert.timestamp.toLowerCase();
+    if (time.includes('today') || time.includes('min ago') || time.includes('hour ago')) {
+      todayAlerts.push(alert);
+    } else {
+      thisWeekAlerts.push(alert);
+    }
+  });
+
+  const severityFilters = ['All', 'Critical', 'Warning', 'System'];
 
   return (
     <ScreenLayout
-      header={
-        <Header
-          title="Alerts"
-          subtitle={`${unreadCount} unread`}
-        />
-      }
+      header={<Header title="Alert History" subtitle="Emergency and system logs" />}
+      scrollable={false} // Custom ScrollView inside to support RefreshControl
+      safeArea={true}
     >
-      <View style={{ paddingBottom: 32 }}>
-        {/* Summary Cards */}
-        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
-          <Card variant="glass" padding="medium" style={{ flex: 1 }}>
-            <Typography variant="h2" color="muted" align="center">
-              {criticalCount}
-            </Typography>
-            <Typography variant="caption" color="muted" align="center">
-              Critical
-            </Typography>
-          </Card>
-          <Card variant="glass" padding="medium" style={{ flex: 1 }}>
-            <Typography variant="h2" color="muted" align="center">
-              {highCount}
-            </Typography>
-            <Typography variant="caption" color="muted" align="center">
-              High Priority
-            </Typography>
-          </Card>
-          <Card variant="glass" padding="medium" style={{ flex: 1 }}>
-            <Typography variant="h2" color="gold" align="center">
-              {unreadCount}
-            </Typography>
-            <Typography variant="caption" color="muted" align="center">
-              Unread
-            </Typography>
-          </Card>
-        </View>
+      {/* Severity Filter Chips */}
+      <View style={styles.filterContainer}>
+        {severityFilters.map(filter => {
+          const isActive = activeFilter === filter;
+          return (
+            <Chip
+              key={filter}
+              label={filter}
+              selected={isActive}
+              onPress={() => setActiveFilter(filter)}
+              variant="primary"
+            />
+          );
+        })}
+      </View>
 
-        {/* Filter Tags */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          <Badge label="All" variant="primary" size="medium" />
-          <Badge label="SOS" variant="error" size="medium" />
-          <Badge label="Band" variant="warning" size="medium" />
-          <Badge label="Check-in" variant="success" size="medium" />
-          <Badge label="System" variant="neutral" size="medium" />
-        </View>
-
-        {/* Alerts List */}
-        <Typography variant="h4" color="primary" style={{ marginBottom: 16 }}>
-          Recent Alerts
-        </Typography>
-
-        {isLoading ? (
-          <ActivityIndicator size="large" color={theme.colors.gold} style={{ marginTop: 24 }} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        {isLoading && !refreshing ? (
+          <Loader text="Syncing safety records..." />
         ) : (
-          <View style={{ gap: 12 }}>
-            {alerts.length > 0 ? (
-              alerts.map((alert: AlertItem) => (
-                <AlertCard key={alert.id} alert={alert} />
-              ))
+          <View>
+            {filteredAlerts.length > 0 ? (
+              <>
+                {/* Today's Section */}
+                {todayAlerts.length > 0 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <Typography variant="label" color="secondary" style={styles.sectionHeader}>
+                      TODAY
+                    </Typography>
+                    {todayAlerts.map(alert => (
+                      <AlertCard key={alert.id} alert={alert} />
+                    ))}
+                  </View>
+                )}
+
+                {/* This Week's Section */}
+                {thisWeekAlerts.length > 0 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <Typography variant="label" color="secondary" style={styles.sectionHeader}>
+                      THIS WEEK
+                    </Typography>
+                    {thisWeekAlerts.map(alert => (
+                      <AlertCard key={alert.id} alert={alert} />
+                    ))}
+                  </View>
+                )}
+              </>
             ) : (
-              <Card variant="outlined" padding="large" style={{ alignItems: 'center' }}>
-                <Typography variant="body" color="muted" align="center">
-                  No alerts yet. Stay safe!
+              /* Empty History Placeholder */
+              <Card variant="default" padding="large" style={styles.emptyCard}>
+                <Icon
+                  name="alerts"
+                  size={48}
+                  color={theme.colors.textMuted}
+                  backgroundColor={theme.colors.backgroundSecondary}
+                  containerStyle={{ marginBottom: 16 }}
+                />
+                <Typography variant="bodyLarge" color="primary" weight="600" align="center">
+                  All clear. No logs found.
+                </Typography>
+                <Typography variant="bodySmall" color="muted" align="center" style={{ marginTop: 6, maxWidth: 240 }}>
+                  {activeFilter === 'All' 
+                    ? "Your safety tracking is active. Trigger events will be logged here." 
+                    : "No warning logs found matching your selected severity level."}
                 </Typography>
               </Card>
             )}
           </View>
         )}
-      </View>
+      </ScrollView>
     </ScreenLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  filterContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderColor: '#F3F4F6',
+    flexWrap: 'wrap',
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 48,
+  },
+  loaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 64,
+  },
+  sectionHeader: {
+    marginBottom: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    marginTop: 16,
+  },
+});

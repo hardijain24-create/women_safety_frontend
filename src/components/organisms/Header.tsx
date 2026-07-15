@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, SafeAreaView, ViewStyle, ScrollView } from 'react-native';
+import { View, SafeAreaView, ViewStyle, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { Typography } from '../atoms/Typography';
 import { IconButton } from '../atoms/IconButton';
+import { Avatar } from '../atoms/Avatar';
+import { Icon } from '../atoms/Icon';
+import { SearchBar } from '../molecules/SearchBar';
 
 interface HeaderProps {
   title: string;
@@ -15,6 +18,15 @@ interface HeaderProps {
   };
   transparent?: boolean;
   showMenu?: boolean;
+  avatar?: {
+    name: string;
+    imageUri?: string;
+    onPress?: () => void;
+  };
+  showNotification?: boolean;
+  onNotificationPress?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (text: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,18 +36,96 @@ export const Header: React.FC<HeaderProps> = ({
   rightAction,
   transparent = false,
   showMenu = false,
+  avatar,
+  showNotification = false,
+  onNotificationPress,
+  searchQuery,
+  onSearchChange,
 }) => {
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const handleMenuPress = () => {
     navigation.openDrawer();
+  };
+
+  const renderLeft = () => {
+    if (onBack) {
+      return (
+        <IconButton
+          icon="arrow-left"
+          onPress={onBack}
+          size="medium"
+          variant="outlined"
+        />
+      );
+    }
+    if (showMenu) {
+      return (
+        <IconButton
+          icon="menu"
+          onPress={handleMenuPress}
+          size="medium"
+          variant="outlined"
+        />
+      );
+    }
+    if (avatar) {
+      return (
+        <Avatar
+          name={avatar.name}
+          imageUri={avatar.imageUri}
+          size="sm"
+          onPress={avatar.onPress}
+        />
+      );
+    }
+    return <View style={{ width: 44 }} />;
+  };
+
+  const renderRight = () => {
+    if (rightAction) {
+      return (
+        <IconButton
+          icon={rightAction.icon}
+          onPress={rightAction.onPress}
+          size="medium"
+          variant="outlined"
+        />
+      );
+    }
+    if (showNotification) {
+      return (
+        <TouchableOpacity 
+          onPress={onNotificationPress} 
+          activeOpacity={0.7}
+          style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+        >
+          <Icon name="bell" size={22} color={theme.colors.primary} />
+          {/* Unread dot */}
+          <View 
+            style={{ 
+              position: 'absolute', 
+              top: 10, 
+              right: 10, 
+              width: 8, 
+              height: 8, 
+              borderRadius: 4, 
+              backgroundColor: theme.colors.error 
+            }} 
+          />
+        </TouchableOpacity>
+      );
+    }
+    return <View style={{ width: 44 }} />;
   };
 
   return (
     <SafeAreaView
       style={{
         backgroundColor: transparent ? 'transparent' : theme.colors.background,
+        borderBottomWidth: searchQuery !== undefined ? 0 : 1,
+        borderBottomColor: theme.colors.borderLight,
       }}
     >
       <View
@@ -43,50 +133,31 @@ export const Header: React.FC<HeaderProps> = ({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingHorizontal: 20,
-          paddingVertical: 16,
+          paddingHorizontal: theme.layout.screenPadding,
+          paddingVertical: theme.spacing.sm + 6,
         }}
       >
-        {onBack ? (
-          <IconButton
-            icon="arrow-left"
-            onPress={onBack}
-            size="medium"
-            variant="outlined"
-          />
-        ) : showMenu ? (
-          <IconButton
-            icon="menu"
-            onPress={handleMenuPress}
-            size="medium"
-            variant="outlined"
-          />
-        ) : (
-          <View style={{ width: 56 }} />
-        )}
+        {renderLeft()}
 
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Typography variant="h4" color="primary" align="center">
+        <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: theme.spacing.sm + 4 }}>
+          <Typography variant="h4" color="primary" align="center" weight="700">
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="caption" color="muted" align="center">
+            <Typography variant="caption" color="muted" align="center" style={{ marginTop: theme.spacing.xs / 2 }}>
               {subtitle}
             </Typography>
           )}
         </View>
 
-        {rightAction ? (
-          <IconButton
-            icon={rightAction.icon}
-            onPress={rightAction.onPress}
-            size="medium"
-            variant="outlined"
-          />
-        ) : (
-          <View style={{ width: 56 }} />
-        )}
+        {renderRight()}
       </View>
+
+      {searchQuery !== undefined && onSearchChange !== undefined && (
+        <View style={{ paddingHorizontal: theme.layout.screenPadding, paddingBottom: theme.spacing.sm + 4 }}>
+          <SearchBar value={searchQuery} onChangeText={onSearchChange} />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -117,8 +188,8 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   };
 
   const contentStyle: ViewStyle = {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: theme.layout.screenPadding,
+    paddingBottom: theme.layout.fabBottom,
     ...contentContainerStyle,
   };
 
@@ -136,10 +207,12 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
     return <View style={{ flex: 1, ...contentStyle }}>{children}</View>;
   };
 
+  const Container = safeArea ? SafeAreaView : View;
+
   return (
-    <View style={containerStyle}>
+    <Container style={containerStyle}>
       {header}
       {renderContent()}
-    </View>
+    </Container>
   );
 };

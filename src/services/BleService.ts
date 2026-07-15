@@ -1,4 +1,4 @@
-import { BleManager, Device, BleError } from 'react-native-ble-plx';
+import { BleManager, Device } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { Buffer } from 'buffer'; // decode base64
 
@@ -145,6 +145,18 @@ class BleService {
   setOnSosTriggered(callback: () => void) {
     console.log('[BLE] SOS callback registered.');
     this.onSosTriggered = callback;
+  }
+
+  async disconnect() {
+    if (this.connectedDevice) {
+      try {
+        await this.connectedDevice.cancelConnection();
+      } catch (e) {
+        console.error('[BLE] Error cancelling connection:', e);
+      }
+      this.connectedDevice = null;
+      this.isMonitoring = false;
+    }
   }
 
   isConnected(): boolean {

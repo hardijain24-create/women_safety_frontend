@@ -17,6 +17,7 @@ export interface ColorTheme {
   primary: string;
   primaryLight: string;
   primaryDark: string;
+  secondary: string;
   gold: string;
   goldLight: string;
   goldDark: string;
@@ -31,6 +32,8 @@ export interface ColorTheme {
   warning: string;
   error: string;
   info: string;
+  neutral: string;
+  muted: string;
   
   // UI colors
   border: string;
@@ -61,11 +64,127 @@ export interface TypographyTheme {
   size4xl: number;
 }
 
+export interface ZIndexTheme {
+  base: number;
+  card: number;
+  header: number;
+  fab: number;
+  overlay: number;
+  modal: number;
+  toast: number;
+  sos: number;
+}
+
+export interface OpacityTheme {
+  disabled: number;
+  overlay: number;
+  pressed: number;
+  loading: number;
+  subtle: number;
+}
+
+export interface IconSizesTheme {
+  xs: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  hero: number;
+  sos: number;
+}
+
+export interface AvatarSizesTheme {
+  xs: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+}
+
+export interface CardTheme {
+  minHeight: number;
+  radius: number;
+  padding: number;
+  gap: number;
+}
+
+export interface ButtonSizesTheme {
+  sm: number;
+  md: number;
+  lg: number;
+  hero: number;
+  sos: number;
+}
+
+export interface AnimationSpringTheme {
+  damping: number;
+  stiffness: number;
+}
+
+export interface AnimationScaleTheme {
+  in: { transform: { scale: number }[] };
+  out: { transform: { scale: number }[] };
+}
+
+export interface AnimationTheme {
+  fast: number;
+  normal: number;
+  slow: number;
+  pulse: number;
+  countdown: number;
+  spring: AnimationSpringTheme;
+  scale: AnimationScaleTheme;
+}
+
+export interface BlurTheme {
+  light: number;
+  medium: number;
+  heavy: number;
+}
+
+export interface GradientsTheme {
+  primary: string[];
+  danger: string[];
+  card: string[];
+}
+
+export interface StatusTheme {
+  connected: string;
+  connecting: string;
+  offline: string;
+  danger: string;
+}
+
+export interface LayoutTheme {
+  screenPadding: number;
+  sectionGap: number;
+  cardGap: number;
+  fabBottom: number;
+}
+
+export interface HeroTheme {
+  sosButton: number;
+  profile: number;
+  header: number;
+}
+
 export interface Theme {
   colors: ColorTheme;
   spacing: SpacingTheme;
   typography: TypographyTheme;
   isDark: boolean;
+  zIndex: ZIndexTheme;
+  opacity: OpacityTheme;
+  iconSizes: IconSizesTheme;
+  avatarSizes: AvatarSizesTheme;
+  card: CardTheme;
+  buttonSizes: ButtonSizesTheme;
+  animation: AnimationTheme;
+  blur: BlurTheme;
+  gradients: GradientsTheme;
+  status: StatusTheme;
+  layout: LayoutTheme;
+  hero: HeroTheme;
 }
 
 export interface DeviceStatus {
@@ -102,6 +221,7 @@ export interface AlertItem {
   timestamp: string;
   isRead: boolean;
   severity: 'critical' | 'high' | 'medium' | 'low';
+  status?: 'active' | 'resolved';
 }
 
 export interface UserProfile {

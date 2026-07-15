@@ -7,63 +7,88 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Light Theme Colors
+        // New design-system tokens (2026 redesign) - mirrors src/theme/colors.ts
+        'background': '#F8FAF8',
+        'backgroundSecondary': '#F1F5F2',
+        'surface': '#FFFFFF',
+        'card': '#FFFFFF',
+        'primary': {
+          DEFAULT: '#17C964',
+          light: '#5CE27F',
+          dark: '#0FA854',
+        },
+        'secondary': '#5CE27F',
+        'danger': '#FF4D5A',
+        'success': '#2ECC71',
+        'warning': '#F5B942',
+        'info': '#3B82F6',
+        'text': {
+          primary: '#1B1B1B',
+          secondary: '#6B7280',
+          muted: '#9CA3AF',
+        },
+        'border-subtle': '#E7ECEA',
+        'divider': '#E7ECEA',
+        'overlay': 'rgba(27, 27, 27, 0.5)',
+
+        // Legacy palette - kept for compatibility, remapped onto the new
+        // green/gray/red palette so old class names don't render out-of-place
+        // colors if something still references them. All unused today (no
+        // component in this codebase uses `className`) - safe either way.
         'navy': {
-          DEFAULT: '#1F2A44',
-          light: '#2A3A5C',
-          dark: '#151B2B',
+          DEFAULT: '#1B1B1B',
+          light: '#374151',
+          dark: '#111827',
         },
         'beige': {
-          DEFAULT: '#F5F1E8',
-          light: '#FAF8F3',
-          dark: '#E8E0D0',
+          DEFAULT: '#F8FAF8',
+          light: '#FFFFFF',
+          dark: '#F1F5F2',
         },
         'cream': {
-          DEFAULT: '#FAF8F3',
-          light: '#FFFDF9',
-          dark: '#F0EEE8',
+          DEFAULT: '#FFFFFF',
+          light: '#FFFFFF',
+          dark: '#F3F4F6',
         },
         'slate': {
-          DEFAULT: '#4A5D73',
-          light: '#5D7388',
-          dark: '#3A4A5C',
+          DEFAULT: '#6B7280',
+          light: '#9CA3AF',
+          dark: '#4B5563',
         },
         'sage': {
-          DEFAULT: '#8FAF9A',
-          light: '#A8C4B0',
-          dark: '#769A82',
+          DEFAULT: '#5CE27F',
+          light: '#8FF0A6',
+          dark: '#17C964',
         },
         'coral': {
-          DEFAULT: '#D95C5C',
-          light: '#E87A7A',
-          dark: '#C44848',
+          DEFAULT: '#FF4D5A',
+          light: '#FF6672',
+          dark: '#E63946',
         },
         'warm-gray': {
-          DEFAULT: '#6E6E6E',
-          light: '#8A8A8A',
-          dark: '#525252',
+          DEFAULT: '#6B7280',
+          light: '#9CA3AF',
+          dark: '#4B5563',
         },
-        // Gold Accent Colors
         'gold': {
-          DEFAULT: '#D4AF37',
-          light: '#E5C76B',
-          dark: '#B89628',
-          50: '#FCFAF5',
-          100: '#F9F4E8',
-          200: '#F0E9D0',
-          300: '#E5D9A8',
-          400: '#D4AF37',
-          500: '#C9A227',
-          600: '#B89628',
-          700: '#9A7B1F',
-          800: '#7D6218',
-          900: '#5E4A12',
+          DEFAULT: '#5CE27F',
+          light: '#8FF0A6',
+          dark: '#17C964',
+          50: '#F0FDF4',
+          100: '#DCFCE7',
+          200: '#BBF7D0',
+          300: '#8FF0A6',
+          400: '#5CE27F',
+          500: '#17C964',
+          600: '#0FA854',
+          700: '#0C8A45',
+          800: '#0A6E37',
+          900: '#08582C',
         },
-        // Dark Theme Colors
         'charcoal': {
-          DEFAULT: '#1A1A1A',
-          light: '#2D2D2D',
-          dark: '#0F0F0F',
+          DEFAULT: '#1B1B1B',
+          light: '#374151',
+          dark: '#111827',
         },
       },
       fontFamily: {
@@ -82,19 +107,50 @@ module.exports = {
         '5xl': '3rem',
         '6xl': '3.75rem',
       },
+      // Additive only - do NOT override Tailwind's core numeric spacing
+      // scale (1-8 already mean 4/8/12/16/20/24/28/32px). Overriding those
+      // would silently change what p-6, gap-8, etc. mean everywhere.
       spacing: {
         '18': '4.5rem',
         '22': '5.5rem',
+        'space-1': '4px',
+        'space-2': '8px',
+        'space-3': '12px',
+        'space-4': '16px',
+        'space-5': '20px',
+        'space-6': '24px',
+        'space-7': '32px',
       },
       borderRadius: {
+        // Aligned to borderRadius scale in src/theme/colors.ts.
+        // Note: this overrides Tailwind's default sm/md/lg/xl/2xl values
+        // (normally 2/6/8/12/16px) with larger app-specific values. Safe
+        // today since nothing uses className, but be aware if className
+        // adoption starts and some third-party component expects defaults.
+        'sm': '12px',
+        'md': '16px',
+        'lg': '20px',
+        'xl': '28px',
+        '2xl': '36px',
+        '3xl': '48px',
         '4xl': '2rem',
         '5xl': '2.5rem',
       },
       boxShadow: {
-        'soft': '0 4px 20px rgba(31, 42, 68, 0.08)',
-        'soft-lg': '0 8px 30px rgba(31, 42, 68, 0.12)',
-        'glass': '0 8px 32px rgba(31, 42, 68, 0.1)',
-        'gold': '0 4px 20px rgba(212, 175, 55, 0.3)',
+        'soft': '0 4px 20px rgba(15, 23, 42, 0.05)',
+        'soft-lg': '0 10px 35px rgba(15, 23, 42, 0.08)',
+        'glass': '0 8px 30px rgba(15, 23, 42, 0.06)',
+        'success': '0 6px 20px rgba(23, 201, 100, 0.18)',
+        'danger': '0 6px 20px rgba(255, 77, 90, 0.18)',
+        'gold': '0 4px 20px rgba(23, 201, 100, 0.25)',
+      },
+      zIndex: {
+        'header': '20',
+        'fab': '50',
+        'overlay': '90',
+        'modal': '100',
+        'toast': '110',
+        'sos': '999',
       },
     },
   },

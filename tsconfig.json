@@ -19,31 +19,30 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@components/*": [
-        "src/components/*"
+        "./src/components/*"
       ],
       "@screens/*": [
-        "src/screens/*"
+        "./src/screens/*"
       ],
       "@navigation/*": [
-        "src/navigation/*"
+        "./src/navigation/*"
       ],
       "@theme/*": [
-        "src/theme/*"
+        "./src/theme/*"
       ],
       "@types/*": [
-        "src/types/*"
+        "./src/types/*"
       ],
       "@constants/*": [
-        "src/constants/*"
+        "./src/constants/*"
       ],
       "@hooks/*": [
-        "src/hooks/*"
+        "./src/hooks/*"
       ]
     }
   },

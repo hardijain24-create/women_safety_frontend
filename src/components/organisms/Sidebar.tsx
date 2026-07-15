@@ -53,12 +53,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Icon name="shield" size={32} color={theme.colors.gold} />
+              <Icon name="shield" size={32} color={theme.colors.primary} />
               <Typography variant="h3" color="primary" style={styles.logoText}>
-                Guardian
-              </Typography>
-              <Typography variant="h3" color="gold" style={styles.logoText}>
-                Band
+                Guardian Band
               </Typography>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -76,9 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   style={[
                     styles.navItem,
                     isActive && {
-                      backgroundColor: theme.colors.primary + '20',
+                      backgroundColor: theme.colors.primary + '15',
                       borderLeftWidth: 4,
-                      borderLeftColor: theme.colors.gold,
+                      borderLeftColor: theme.colors.primary,
                     },
                   ]}
                   onPress={() => {
@@ -91,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Icon 
                       name={item.icon} 
                       size={24} 
-                      color={isActive ? theme.colors.gold : theme.colors.textSecondary} 
+                      color={isActive ? theme.colors.primary : theme.colors.textSecondary} 
                     />
                     <Typography
                       variant="bodyLarge"
@@ -103,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </Typography>
                   </View>
                   {isActive && (
-                    <Icon name="chevron-right" size={20} color={theme.colors.gold} />
+                    <Icon name="chevron-right" size={20} color={theme.colors.primary} />
                   )}
                 </TouchableOpacity>
               );
@@ -113,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Footer */}
           <View style={styles.footer}>
             <View style={styles.footerContent}>
-              <Icon name="shield" size={20} color={theme.colors.gold} />
+              <Icon name="shield" size={20} color={theme.colors.primary} />
               <Typography variant="caption" color="muted" style={styles.footerText}>
                 Safety First, Always
               </Typography>
@@ -189,7 +186,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginVertical: 4,
     borderRadius: 16,
-    transition: 'all 0.2s ease',
   },
   navItemContent: {
     flexDirection: 'row',
