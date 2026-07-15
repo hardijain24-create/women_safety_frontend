@@ -111,6 +111,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isLoggedIn = async () => {
     try {
       setIsLoading(true);
+      // Ping the backend to wake it up from Render's free tier sleep
+      try {
+        console.log('Pinging backend to wake up...');
+        await fetch('https://women-safety-5lls.onrender.com/health', { method: 'GET' });
+      } catch (err) {
+        console.log('Wake up ping failed or timed out:', err);
+      }
+
       let token = await AsyncStorage.getItem('userToken');
       setUserToken(token);
       if (token) {

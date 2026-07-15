@@ -1,6 +1,7 @@
 import { BleManager, Device, BleError } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { Buffer } from 'buffer'; // decode base64
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GUARDIAN_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const GUARDIAN_SOS_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
@@ -41,7 +42,7 @@ class BleService {
   scanForDevices(onDeviceFound: (device: Device) => void, onStop: () => void) {
     console.log('[BLE] Starting device scan...');
     this.manager.startDeviceScan(
-      [GUARDIAN_SERVICE_UUID], // Filter by our specific service UUID — faster & more reliable
+      null, // Scan for all devices, filtering manually inside the callback to fix Android compatibility issues
       { allowDuplicates: false },
       (error, device) => {
         if (error) {
@@ -84,6 +85,7 @@ class BleService {
       });
       this.connectedDevice = device;
       console.log('[BLE] Connected! Discovering services...');
+      await AsyncStorage.setItem('pairedDeviceId', deviceId);
 
       await device.discoverAllServicesAndCharacteristics();
       console.log('[BLE] Services discovered. Setting up SOS monitor...');
@@ -100,6 +102,34 @@ class BleService {
     } catch (e: any) {
       console.error('[BLE] Connection error:', e?.message || e);
       return false;
+    }
+  }
+
+  async autoConnect(): Promise<boolean> {
+    try {
+      const deviceId = await AsyncStorage.getItem('pairedDeviceId');
+      if (deviceId) {
+        console.log('[BLE] Found saved device ID, attempting auto-connect to:', deviceId);
+        return await this.connectToDevice(deviceId);
+      }
+      return false;
+    } catch (e) {
+      console.error('[BLE] Auto-connect error:', e);
+      return false;
+    }
+  }
+
+  async disconnect() {
+    try {
+      if (this.connectedDevice) {
+        await this.manager.cancelDeviceConnection(this.connectedDevice.id);
+      }
+      await AsyncStorage.removeItem('pairedDeviceId');
+      this.connectedDevice = null;
+      this.isMonitoring = false;
+      console.log('[BLE] Disconnected and unpaired.');
+    } catch (e) {
+      console.error('[BLE] Error disconnecting:', e);
     }
   }
 

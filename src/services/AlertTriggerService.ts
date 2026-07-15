@@ -1,4 +1,4 @@
-import { Alert, Platform, Vibration, PermissionsAndroid } from 'react-native';
+import { Alert, Platform, Vibration, PermissionsAndroid, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { alertApi } from '../api/services';
@@ -59,7 +59,7 @@ export const AlertTriggerService = {
                     console.log(`Direct SMS failed for ${contact.phone}, trying Intent...`, smsError);
                     // Fall back to opening SMS app pre-filled
                     try {
-                      await SmsSender.openSMSIntent(contact.phone, message);
+                      await Linking.openURL(`sms:${contact.phone}?body=${encodeURIComponent(message)}`);
                       sentCount++;
                     } catch (intentError) {
                       console.log(`Intent SMS also failed for ${contact.phone}`, intentError);
@@ -79,7 +79,7 @@ export const AlertTriggerService = {
               const firstContact = user.emergency_contacts.find(c => c.phone);
               if (firstContact?.phone) {
                 try {
-                  await SmsSender.openSMSIntent(firstContact.phone, message);
+                  await Linking.openURL(`sms:${firstContact.phone}?body=${encodeURIComponent(message)}`);
                   // Don't skip Twilio — Intent SMS needs manual user tap, others won't get it
                 } catch (e) {
                   console.log("Intent SMS also failed", e);

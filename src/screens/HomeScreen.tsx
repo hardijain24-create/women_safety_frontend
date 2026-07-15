@@ -13,6 +13,7 @@ import { ScreenLayout, Header } from '../components/organisms/Header';
 import { DevicePanel } from '../components/organisms/DevicePanel';
 import * as Location from 'expo-location';
 import * as Battery from 'expo-battery';
+import BleService from '../services/BleService';
 import { mockDeviceStatus, mockLocation, mockUserProfile, ROUTES } from '../constants';
 import { RootStackParamList } from '../navigation';
 import { AuthContext } from '../context/AuthContext';
@@ -57,6 +58,20 @@ export const HomeScreen: React.FC = () => {
       if (batterySubscription) batterySubscription.remove();
       if (powerStateSubscription) powerStateSubscription.remove();
     };
+  }, []);
+
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    const connectBle = async () => {
+      const connected = await BleService.autoConnect();
+      setDeviceStatus(prev => ({ ...prev, isConnected: connected || BleService.isConnected() }));
+      
+      interval = setInterval(() => {
+        setDeviceStatus(prev => ({ ...prev, isConnected: BleService.isConnected() }));
+      }, 3000);
+    };
+    connectBle();
+    return () => clearInterval(interval);
   }, []);
 
   const handleShareLocation = async () => {

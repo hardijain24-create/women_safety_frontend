@@ -21,7 +21,14 @@ export const BandScreen: React.FC = () => {
   const [autoSync, setAutoSync] = useState(true);
 
   const [isScanning, setIsScanning] = useState(false);
-  const [bandConnected, setBandConnected] = useState(false);
+  const [bandConnected, setBandConnected] = useState(BleService.isConnected());
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setBandConnected(BleService.isConnected());
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleTestVibration = () => {
     Alert.alert('Testing', 'Band vibration test sent');
@@ -142,11 +149,21 @@ export const BandScreen: React.FC = () => {
               {bandConnected ? 'Connected & Active' : 'Disconnected'}
             </Typography>
 
-            {!bandConnected && (
+            {!bandConnected ? (
               <Button
                 title={isScanning ? "Scanning..." : "Pair Guardian Device"}
                 onPress={handlePairBand}
                 disabled={isScanning}
+                style={{ marginTop: 16 }}
+              />
+            ) : (
+              <Button
+                title="Disconnect Band"
+                onPress={async () => {
+                  await BleService.disconnect();
+                  setBandConnected(false);
+                }}
+                variant="secondary"
                 style={{ marginTop: 16 }}
               />
             )}
