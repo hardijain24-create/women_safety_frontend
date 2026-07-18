@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../theme';
 import { Typography } from './Typography';
 
@@ -26,6 +27,11 @@ export const Toggle: React.FC<ToggleProps> = ({
     large: { transform: [{ scale: 1.2 }] },
   };
 
+  const handleToggle = (val: boolean) => {
+    Haptics.selectionAsync().catch(() => {});
+    onValueChange(val);
+  };
+
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       {label && (
@@ -40,7 +46,7 @@ export const Toggle: React.FC<ToggleProps> = ({
       <View style={sizes[size]}>
         <Switch
           value={value}
-          onValueChange={onValueChange}
+          onValueChange={handleToggle}
           disabled={disabled}
           trackColor={{
             false: theme.colors.border,

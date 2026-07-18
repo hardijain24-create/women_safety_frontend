@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Alert, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 
@@ -34,7 +34,7 @@ export const LocationScreen: React.FC = () => {
       
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
+        setErrorMsg('Location permission is required to fetch and share your live coordinates.');
         setLoading(false);
         return;
       }
@@ -113,12 +113,22 @@ export const LocationScreen: React.FC = () => {
             <Typography variant="bodySmall" color="secondary" align="center" style={{ marginBottom: 20 }}>
               {errorMsg}
             </Typography>
-            <Button
-              title="Grant Permissions"
-              onPress={fetchLocation}
-              variant="primary"
-              size="medium"
-            />
+            <View style={{ flexDirection: 'row', gap: 10, width: '100%', justifyContent: 'center' }}>
+              <Button
+                title="Retry"
+                onPress={fetchLocation}
+                variant="outline"
+                size="medium"
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Open Settings"
+                onPress={() => Linking.openSettings()}
+                variant="primary"
+                size="medium"
+                style={{ flex: 1 }}
+              />
+            </View>
           </Card>
         </View>
       </ScreenLayout>

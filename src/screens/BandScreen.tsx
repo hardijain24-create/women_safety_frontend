@@ -9,12 +9,12 @@ import { Typography } from '../components/atoms/Typography';
 import { Icon } from '../components/atoms/Icon';
 import { Toggle } from '../components/atoms/Toggle';
 import { Loader } from '../components/atoms/Loader';
-import { Card } from '../components/molecules/Card';
-import { DeviceCard } from '../components/molecules/DeviceCard';
+import { Card, DeviceCard, BluetoothUnavailable } from '../components/molecules';
 import { DevicePanel } from '../components/organisms/DevicePanel';
 import { ScreenLayout, Header } from '../components/organisms/Header';
 import BleService from '../services/BleService';
 import { userApi, alertApi } from '../api/services';
+import { Features } from '../utils/platformFeatures';
 
 export const BandScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -140,16 +140,20 @@ export const BandScreen: React.FC = () => {
       <View style={{ paddingBottom: 32 }}>
         
         {/* Connected Wearable Visualization Molecule */}
-        <DeviceCard
-          isConnected={bandConnected}
-          batteryLevel={78}
-          signalStrength={85}
-          lastSync="Just now"
-          isScanning={isScanning}
-          onConnect={handlePairBand}
-          onDisconnect={handleDisconnect}
-          onRefresh={handleTestVibration}
-        />
+        {!Features.bluetooth ? (
+          <BluetoothUnavailable />
+        ) : (
+          <DeviceCard
+            isConnected={bandConnected}
+            batteryLevel={78}
+            signalStrength={85}
+            lastSync="Just now"
+            isScanning={isScanning}
+            onConnect={handlePairBand}
+            onDisconnect={handleDisconnect}
+            onRefresh={handleTestVibration}
+          />
+        )}
 
         {isScanning && (
           <Card variant="default" padding="medium" style={{ marginBottom: 20 }}>
@@ -172,7 +176,7 @@ export const BandScreen: React.FC = () => {
         )}
 
         {/* Reconnection Troubleshooting Guide (If Disconnected) */}
-        {!bandConnected && !isScanning && (
+        {!bandConnected && !isScanning && Features.bluetooth && (
           <Card variant="danger" padding="medium" style={{ marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <Icon name="alerts" size={24} color={theme.colors.error} />
@@ -191,7 +195,7 @@ export const BandScreen: React.FC = () => {
         )}
 
         {/* Band Settings */}
-        <Card variant="default" padding="large" style={{ marginBottom: 20 }}>
+        <Card variant="default" padding="large" style={{ marginBottom: 20, opacity: Features.bluetooth ? 1 : 0.65 }}>
           <Typography variant="h4" color="primary" style={{ marginBottom: 20 }}>
             Device Profile Settings
           </Typography>
@@ -201,6 +205,7 @@ export const BandScreen: React.FC = () => {
               label="Haptic Click Feedback"
               value={vibrationEnabled}
               onValueChange={setVibrationEnabled}
+              disabled={!Features.bluetooth}
               size="large"
             />
           </View>
@@ -210,6 +215,7 @@ export const BandScreen: React.FC = () => {
               label="Siren Alarm Sound"
               value={alarmEnabled}
               onValueChange={setAlarmEnabled}
+              disabled={!Features.bluetooth}
               size="large"
             />
           </View>
@@ -219,6 +225,7 @@ export const BandScreen: React.FC = () => {
               label="Auto Background Sync"
               value={autoSync}
               onValueChange={setAutoSync}
+              disabled={!Features.bluetooth}
               size="large"
             />
           </View>
@@ -235,6 +242,7 @@ export const BandScreen: React.FC = () => {
               <TouchableOpacity 
                 activeOpacity={0.9}
                 style={[styles.sliderTrack, { backgroundColor: theme.colors.border }]}
+                disabled={!Features.bluetooth}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                   setAlarmVolume(70); // Reset or dynamic value

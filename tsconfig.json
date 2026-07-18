@@ -5,6 +5,7 @@
     "strict": true,
     "jsx": "react-native",
     "moduleResolution": "bundler",
+    "moduleSuffixes": [".native", ".web", ""],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

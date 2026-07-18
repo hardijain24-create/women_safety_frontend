@@ -52,7 +52,7 @@ export const PermissionCard: React.FC<PermissionCardProps> = ({
         </View>
 
         <Badge
-          label={isGranted ? 'Authorized' : status === 'requesting' ? 'Required' : 'Denied'}
+          label={isGranted ? 'Granted' : status === 'requesting' ? 'Requesting' : 'Denied'}
           variant={isGranted ? 'success' : status === 'requesting' ? 'warning' : 'error'}
           size="small"
         />

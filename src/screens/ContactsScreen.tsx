@@ -4,9 +4,10 @@ import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
 import { Input } from '../components/atoms/Input';
-import { Icon } from '../components/atoms/Icon';
 import { Chip } from '../components/atoms/Chip';
-import { Loader } from '../components/atoms/Loader';
+import { Toggle } from '../components/atoms/Toggle';
+import { Icon } from '../components/atoms/Icon';
+import { Skeleton } from '../components/atoms/Skeleton';
 import { ContactCard } from '../components/molecules/ContactCard';
 import { Card } from '../components/molecules/Card';
 import { SearchBar } from '../components/molecules/SearchBar';
@@ -15,7 +16,6 @@ import { userApi } from '../api/services';
 import type { EmergencyContact } from '../types';
 
 export const ContactsScreen: React.FC = () => {
-  const { theme } = useTheme();
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -29,6 +29,7 @@ export const ContactsScreen: React.FC = () => {
     phone: '',
     email: '',
     relation: 'Friend', // Default relationship
+    isPrimary: false,
   });
 
   const [formErrors, setFormErrors] = useState({
@@ -83,12 +84,13 @@ export const ContactsScreen: React.FC = () => {
           phone: sanitizedPhone,
           email: newContact.email.trim() || undefined,
           relation: newContact.relation.trim() || undefined,
+          isPrimary: newContact.isPrimary,
         }
       });
 
       if (response.success) {
         setContacts(response.data.emergency_contacts);
-        setNewContact({ name: '', phone: '', email: '', relation: 'Friend' });
+        setNewContact({ name: '', phone: '', email: '', relation: 'Friend', isPrimary: false });
         setIsModalVisible(false);
         Alert.alert('Success', 'Contact added successfully');
       }
@@ -150,6 +152,8 @@ export const ContactsScreen: React.FC = () => {
   const relationPresets = ['Family', 'Friend', 'Work', 'Guardian', 'Doctor', 'Other'];
   const filterCategories = ['All', 'Family', 'Friends', 'Work'];
 
+  const { theme } = useTheme();
+
   return (
     <ScreenLayout
       header={
@@ -196,7 +200,9 @@ export const ContactsScreen: React.FC = () => {
 
         {/* Loading Indicator */}
         {loading ? (
-          <Loader text="Loading emergency list..." />
+          <View style={{ marginTop: 12, paddingHorizontal: 4 }}>
+            <Skeleton variant="list" />
+          </View>
         ) : (
           <View style={{ marginTop: 8 }}>
             {/* Contacts Listing */}
@@ -218,21 +224,21 @@ export const ContactsScreen: React.FC = () => {
                   backgroundColor={theme.colors.backgroundSecondary}
                   containerStyle={{ marginBottom: 16 }}
                 />
-                <Typography variant="bodyLarge" color="primary" weight="600" align="center">
-                  No contacts found
+                <Typography variant="bodyLarge" color="primary" weight="700" align="center">
+                  {contacts.length === 0 ? "No emergency contacts yet" : "No contacts found"}
                 </Typography>
-                <Typography variant="bodySmall" color="muted" align="center" style={{ marginTop: 6, maxWidth: 220 }}>
+                <Typography variant="bodySmall" color="muted" align="center" style={{ marginTop: 8, maxWidth: 260, lineHeight: 18 }}>
                   {contacts.length === 0 
-                    ? "Add trusted guardians who will receive SMS maps when you trigger SOS." 
+                    ? "Add trusted contacts to notify during emergencies." 
                     : "No contacts match your current search query or filter."}
                 </Typography>
                 {contacts.length === 0 && (
                   <Button 
-                    title="Add First Contact"
+                    title="Add Contact"
                     onPress={() => setIsModalVisible(true)}
                     variant="primary"
                     size="medium"
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 20, paddingHorizontal: 24 }}
                   />
                 )}
               </Card>
@@ -283,8 +289,18 @@ export const ContactsScreen: React.FC = () => {
           variant="outlined"
         />
 
+        {/* Primary Guardian Toggle */}
+        <View style={{ marginVertical: 12, paddingHorizontal: 4 }}>
+          <Toggle
+            label="Mark as Primary Guardian"
+            value={newContact.isPrimary}
+            onValueChange={val => setNewContact({ ...newContact, isPrimary: val })}
+            size="large"
+          />
+        </View>
+
         {/* Relationship Presets Selector */}
-        <Typography variant="label" color="secondary" style={{ marginBottom: 8, marginLeft: 4 }}>
+        <Typography variant="label" color="secondary" style={{ marginBottom: 8, marginLeft: 4, marginTop: 12 }}>
           Relationship
         </Typography>
         <View style={styles.presetsContainer}>

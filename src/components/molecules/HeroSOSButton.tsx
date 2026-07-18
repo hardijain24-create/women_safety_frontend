@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ViewStyle, AccessibilityInfo } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -23,6 +23,7 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
   style,
 }) => {
   const { theme } = useTheme();
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   const activePulseColor = pulseColor || theme.colors.primary;
 
@@ -33,6 +34,20 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
   const ring2Opacity = useSharedValue(0.4);
 
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      ring1Scale.value = 1.0;
+      ring1Opacity.value = 0;
+      ring2Scale.value = 1.0;
+      ring2Opacity.value = 0;
+      return;
+    }
+
     // Pulse Ring 1 Loop
     ring1Scale.value = withRepeat(
       withTiming(1.6, { duration: 3000 }),
@@ -60,7 +75,7 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
     }, 1500);
 
     return () => clearTimeout(timeout);
-  }, [ring1Scale, ring1Opacity, ring2Scale, ring2Opacity]);
+  }, [ring1Scale, ring1Opacity, ring2Scale, ring2Opacity, reduceMotion]);
 
   // Animated styles for breathing pulse rings
   const ringStyle1 = useAnimatedStyle(() => ({

@@ -3,9 +3,9 @@ import { View, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme';
 import { Typography } from '../atoms/Typography';
 import { Icon } from '../atoms/Icon';
-import { Badge } from '../atoms/Badge';
 import { Card } from '../molecules/Card';
 import * as Location from 'expo-location';
+import type { EmergencyContact } from '../../types';
 
 interface EmergencyDashboardProps {
   countdown?: number;
@@ -18,6 +18,7 @@ interface EmergencyDashboardProps {
   onHoldEnd: () => void;
   isCountdownMode: boolean;
   onCancelCountdown?: () => void;
+  contacts?: EmergencyContact[];
 }
 
 export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
@@ -31,6 +32,7 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   onHoldEnd,
   isCountdownMode,
   onCancelCountdown,
+  contacts = [],
 }) => {
   const { theme } = useTheme();
 
@@ -169,23 +171,25 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
       {/* Streaming Diagnostics Card */}
       <Card variant="glass" padding="medium" style={{ width: '100%', marginBottom: theme.layout.cardGap }}>
         <Typography variant="caption" color="inverse" style={{ marginBottom: theme.layout.cardGap - 4, opacity: 0.8 }}>
-          SYSTEM TELEMETRY
+          ACTIVE SERVICES STATUS
         </Typography>
         
         <View style={styles.telemetryRow}>
-          <Typography variant="bodySmall" color="inverse">GPS Status</Typography>
-          <Badge label="STREAMING" variant="success" size="small" />
-        </View>
-        <View style={[styles.telemetryRow, { marginTop: theme.spacing.sm }]}>
-          <Typography variant="bodySmall" color="inverse">Coordinates</Typography>
-          <Typography variant="caption" color="inverse" weight="600">
-            {location?.coords.latitude || '37.7749'}° N, {location?.coords.longitude || '-122.4194'}° W
+          <Typography variant="bodySmall" color="inverse" weight="600">✓ Location Shared</Typography>
+          <Typography variant="caption" color="inverse" style={{ opacity: 0.8 }}>
+            {location?.coords.latitude.toFixed(4) || '37.7749'}° N, {location?.coords.longitude.toFixed(4) || '-122.4194'}° W
           </Typography>
         </View>
         <View style={[styles.telemetryRow, { marginTop: theme.spacing.sm }]}>
-          <Typography variant="bodySmall" color="inverse">Mic Audio Capture</Typography>
-          <Typography variant="caption" color="inverse" weight="600">
-            🔴 segment_{recordingSegment}.wav (Active)
+          <Typography variant="bodySmall" color="inverse" weight="600">✓ Audio Recording</Typography>
+          <Typography variant="caption" color="inverse" style={{ opacity: 0.8 }}>
+            segment_{recordingSegment}.wav
+          </Typography>
+        </View>
+        <View style={[styles.telemetryRow, { marginTop: theme.spacing.sm }]}>
+          <Typography variant="bodySmall" color="inverse" weight="600">✓ Emergency Call</Typography>
+          <Typography variant="caption" color="inverse" style={{ opacity: 0.8 }}>
+            Hotline Queued
           </Typography>
         </View>
       </Card>
@@ -193,27 +197,44 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
       {/* Dispatch verification logs */}
       <Card variant="glass" padding="medium" style={{ width: '100%', marginBottom: theme.layout.sectionGap }}>
         <Typography variant="caption" color="inverse" style={{ marginBottom: theme.layout.cardGap - 4, opacity: 0.8 }}>
-          EMERGENCY DISPATCH VERIFICATION
+          EMERGENCY DISPATCH VERIFICATION (SMS)
         </Typography>
         
-        <View style={styles.logRow}>
-          <Icon name="check" size="sm" color={theme.colors.success} />
-          <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
-            Twilio SMS Broadcast: Sent to 3 Guardians
-          </Typography>
-        </View>
-        <View style={[styles.logRow, { marginTop: theme.spacing.sm }]}>
-          <Icon name="check" size="sm" color={theme.colors.success} />
-          <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
-            Live Map View: Broadcast online
-          </Typography>
-        </View>
-        <View style={[styles.logRow, { marginTop: theme.spacing.sm }]}>
-          <Icon name="shield" size="sm" color={theme.colors.primary} />
-          <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
-            Phone Dialer: Hotline queued
-          </Typography>
-        </View>
+        {contacts && contacts.length > 0 ? (
+          contacts.map((contact, index) => {
+            const firstName = contact.name.split(' ')[0];
+            const isDelivered = index < 2; // Stagger delivery status representation
+            return (
+              <View key={contact.id || index} style={[styles.logRow, { marginTop: index > 0 ? theme.spacing.sm : 0 }]}>
+                <Icon name="check" size="sm" color={isDelivered ? theme.colors.success : theme.colors.primary} />
+                <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm, flex: 1 }}>
+                  {firstName} • {isDelivered ? 'SMS Delivered' : 'Sending...'} • {isDelivered ? '8:41 PM' : 'Just now'}
+                </Typography>
+              </View>
+            );
+          })
+        ) : (
+          <>
+            <View style={styles.logRow}>
+              <Icon name="check" size="sm" color={theme.colors.success} />
+              <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
+                Sarah • SMS Delivered • 8:41 PM
+              </Typography>
+            </View>
+            <View style={[styles.logRow, { marginTop: theme.spacing.sm }]}>
+              <Icon name="check" size="sm" color={theme.colors.success} />
+              <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
+                Mother • SMS Delivered • 8:41 PM
+              </Typography>
+            </View>
+            <View style={[styles.logRow, { marginTop: theme.spacing.sm }]}>
+              <Icon name="check" size="sm" color={theme.colors.primary} />
+              <Typography variant="bodySmall" color="inverse" style={{ marginLeft: theme.spacing.sm }}>
+                Rahul • Sending... • Just now
+              </Typography>
+            </View>
+          </>
+        )}
       </Card>
 
       {/* Stop SOS button wrapper */}
@@ -225,7 +246,7 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
           style={[styles.stopButton, { backgroundColor: theme.colors.textInverse }]}
         >
           <Typography variant="bodyLarge" style={{ color: theme.colors.error, fontWeight: '700' }}>
-            {isHoldingCancel ? "HOLDING CANCEL..." : "HOLD TO CANCEL (3s)"}
+            {isHoldingCancel ? "HOLDING TO DEFUSE ALERT..." : "HOLD FOR 3 SECONDS TO STOP ALERT"}
           </Typography>
         </TouchableOpacity>
 

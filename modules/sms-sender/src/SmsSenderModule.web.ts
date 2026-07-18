@@ -10,6 +10,14 @@ class SmsSenderModule extends NativeModule<SmsSenderModuleEvents> {
   hello() {
     return 'Hello world! 👋';
   }
+  async sendDirectSMS(phoneNumber: string, _message: string): Promise<boolean> {
+    console.warn(`[SMS] sendDirectSMS(${phoneNumber}) is not supported on Web.`);
+    return false;
+  }
+  async openSMSIntent(phoneNumber: string, _message: string): Promise<boolean> {
+    console.warn(`[SMS] openSMSIntent(${phoneNumber}) is not supported on Web.`);
+    return false;
+  }
 }
 
-export default registerWebModule(SmsSenderModule, 'SmsSenderModule');
+export default registerWebModule(SmsSenderModule, 'SmsSenderModule') as unknown as SmsSenderModule;

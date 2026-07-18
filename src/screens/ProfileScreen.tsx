@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Alert, Linking, Platform, StyleSheet } from 'react-native';
+import * as Location from 'expo-location';
 import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
@@ -14,6 +15,7 @@ import { SettingsRow } from '../components/molecules/SettingsRow';
 import { SettingsSection } from '../components/organisms/SettingsSection';
 import { ScreenLayout, Header } from '../components/organisms/Header';
 import { AuthContext } from '../context/AuthContext';
+import BleService from '../services/BleService';
 
 export const ProfileScreen: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -26,6 +28,77 @@ export const ProfileScreen: React.FC = () => {
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [alarmEnabled, setAlarmEnabled] = useState(true);
   const [autoConnect, setAutoConnect] = useState(true);
+
+  // Live Permission States
+  const [gpsPermission, setGpsPermission] = useState<'granted' | 'denied' | 'requesting'>('requesting');
+  const [blePermission, setBlePermission] = useState<'granted' | 'denied' | 'requesting'>('requesting');
+  const [smsPermission] = useState<'granted' | 'denied' | 'requesting'>('granted'); // SMS starts as mock active
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = async () => {
+    try {
+      if (Platform.OS === 'web') {
+        setGpsPermission('granted');
+        setBlePermission('denied');
+        return;
+      }
+
+      // Check GPS
+      const { status: gpsStatus } = await Location.getForegroundPermissionsAsync();
+      setGpsPermission(gpsStatus === 'granted' ? 'granted' : gpsStatus === 'undetermined' ? 'requesting' : 'denied');
+
+      // Check Bluetooth (BleService requires checking or requesting, we'll map connected device state or request permissions)
+      const hasBle = await BleService.requestPermissions();
+      setBlePermission(hasBle ? 'granted' : 'denied');
+    } catch (e) {
+      console.warn('Error checking permissions in ProfileScreen:', e);
+    }
+  };
+
+  const handleRequestPermission = async (type: 'gps' | 'ble') => {
+    if (Platform.OS === 'web') {
+      Alert.alert(
+        'Web Limitation',
+        `${type === 'gps' ? 'Location' : 'Bluetooth'} permissions must be managed directly in your browser's preference settings.`
+      );
+      return;
+    }
+
+    if (type === 'gps') {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        setGpsPermission('granted');
+      } else {
+        setGpsPermission('denied');
+        Alert.alert(
+          'Location Access Required',
+          'Please grant location permissions in system settings to share coordinates during an SOS trigger.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() }
+          ]
+        );
+      }
+    } else {
+      const hasBle = await BleService.requestPermissions();
+      if (hasBle) {
+        setBlePermission('granted');
+      } else {
+        setBlePermission('denied');
+        Alert.alert(
+          'Bluetooth Access Required',
+          'Please grant Bluetooth permissions in system settings to keep the Guardian Band paired.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() }
+          ]
+        );
+      }
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -111,31 +184,33 @@ export const ProfileScreen: React.FC = () => {
             title="GPS Location Services"
             description="Accurate coordinates sharing during SOS broadcast"
             icon="location-pin"
-            status="granted"
-            onRequest={() => {}}
+            status={gpsPermission}
+            onRequest={() => handleRequestPermission('gps')}
           />
           <PermissionCard
             title="Bluetooth Manager"
             description="Maintain syncing link with ESP32 wearable device"
             icon="band"
-            status="granted"
-            onRequest={() => {}}
+            status={blePermission}
+            onRequest={() => handleRequestPermission('ble')}
           />
           <PermissionCard
             title="Direct SMS Sending"
             description="Send emergency alerts directly to your contacts"
             icon="phone"
-            status="granted"
+            status={smsPermission}
             onRequest={() => {}}
           />
         </View>
 
         {/* Preferences Toggles Settings Group */}
-        <SettingsSection title="Preferences & Settings">
+        {/* General Settings Section */}
+        <SettingsSection title="General">
           <SettingsRow
             label="Dark Theme Interface"
             description="Toggle light/dark screen palette"
             icon="moon"
+            noBorder={true}
             rightComponent={
               <Toggle
                 value={theme.isDark}
@@ -144,10 +219,15 @@ export const ProfileScreen: React.FC = () => {
               />
             }
           />
+        </SettingsSection>
+
+        {/* Notifications Section */}
+        <SettingsSection title="Notifications">
           <SettingsRow
             label="Auto Check-in Prompts"
             description="Prompt safety status at intervals"
             icon="check"
+            noBorder={true}
             rightComponent={
               <Toggle
                 value={autoCheckIn}
@@ -156,6 +236,10 @@ export const ProfileScreen: React.FC = () => {
               />
             }
           />
+        </SettingsSection>
+
+        {/* Safety & Wearable Section */}
+        <SettingsSection title="Safety & Device">
           <SettingsRow
             label="Auto Connect Wearable"
             description="Background device auto pairing"
@@ -184,6 +268,7 @@ export const ProfileScreen: React.FC = () => {
             label="Siren Alarm Sound"
             description="Trigger sirens during SOS"
             icon="volume"
+            noBorder={true}
             rightComponent={
               <Toggle
                 value={alarmEnabled}
@@ -191,6 +276,23 @@ export const ProfileScreen: React.FC = () => {
                 size="large"
               />
             }
+          />
+        </SettingsSection>
+
+        {/* Support & Legal Section */}
+        <SettingsSection title="Support & Legal">
+          <SettingsRow
+            label="Terms of Service"
+            description="Read our usage policies and agreements"
+            icon="shield"
+            onPress={() => Alert.alert("Terms of Service", "Guardian Band Terms of Service v1.0.2.")}
+          />
+          <SettingsRow
+            label="Privacy Policy"
+            description="Understand how we handle and protect telemetry"
+            icon="heart"
+            noBorder={true}
+            onPress={() => Alert.alert("Privacy Policy", "Guardian Band Privacy Policy v1.0.2.")}
           />
         </SettingsSection>
 

@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, AccessibilityInfo, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import { useTheme } from '../theme';
 import { Button } from '../components/atoms/Button';
 import { Typography } from '../components/atoms/Typography';
 import { Input } from '../components/atoms/Input';
+import { Icon } from '../components/atoms/Icon';
 import { ProgressRing } from '../components/atoms/ProgressRing';
 import { Loader } from '../components/atoms/Loader';
 import { Card } from '../components/molecules/Card';
@@ -30,8 +31,21 @@ export const RegisterScreen: React.FC = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   const { register } = useContext(AuthContext);
+
+  // Refs for keyboard navigation focus
+  const nameRef = useRef<any>(null);
+  const emailRef = useRef<any>(null);
+  const passwordRef = useRef<any>(null);
+  const confirmPasswordRef = useRef<any>(null);
+
+  // Password criteria states
+  const hasEightChars = password.length >= 8;
+  const hasNumber = /[0-9]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasSymbol = /[^A-Za-z0-9]/.test(password);
 
   // Dynamic Step Tracker
   const currentStep = 1;
@@ -45,11 +59,24 @@ export const RegisterScreen: React.FC = () => {
   const cardTranslateY = useSharedValue(40);
 
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      headerOpacity.value = 1;
+      headerScale.value = 1;
+      cardOpacity.value = 1;
+      cardTranslateY.value = 0;
+      return;
+    }
     headerOpacity.value = withTiming(1, { duration: 500 });
     headerScale.value = withTiming(1, { duration: 500 });
     cardOpacity.value = withDelay(100, withTiming(1, { duration: 550 }));
     cardTranslateY.value = withDelay(100, withTiming(0, { duration: 550 }));
-  }, [headerOpacity, headerScale, cardOpacity, cardTranslateY]);
+  }, [headerOpacity, headerScale, cardOpacity, cardTranslateY, reduceMotion]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -60,20 +87,6 @@ export const RegisterScreen: React.FC = () => {
     opacity: cardOpacity.value,
     transform: [{ translateY: cardTranslateY.value }],
   }));
-
-  const getPasswordStrength = () => {
-    if (!password) return { score: 0, text: '', color: 'transparent' };
-    let score = 0;
-    if (password.length >= 6) score++;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    
-    if (score <= 1) return { score, text: 'Weak password', color: theme.colors.error };
-    if (score <= 3) return { score, text: 'Moderate strength', color: theme.colors.warning };
-    return { score, text: 'Strong password', color: theme.colors.primary };
-  };
 
   const handleRegister = async () => {
     Keyboard.dismiss();
@@ -99,8 +112,8 @@ export const RegisterScreen: React.FC = () => {
     if (!password) {
       setPasswordError('Password is required');
       hasError = true;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+    } else if (!hasEightChars || !hasNumber || !hasUppercase || !hasSymbol) {
+      setPasswordError('Password must meet all checklist requirements');
       hasError = true;
     } else {
       setPasswordError('');
@@ -132,11 +145,31 @@ export const RegisterScreen: React.FC = () => {
     }
   };
 
+  const renderRequirement = (label: string, met: boolean) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Icon 
+        name={met ? "check" : "close"} 
+        size={13} 
+        color={met ? theme.colors.success : theme.colors.textMuted} 
+        containerStyle={{ width: 16, height: 16 }}
+      />
+      <Typography 
+        variant="caption" 
+        style={{ 
+          color: met ? theme.colors.success : theme.colors.textMuted,
+          fontWeight: met ? '600' : '400',
+        }}
+      >
+        {label}
+      </Typography>
+    </View>
+  );
+
   // Form validity for primary button state
   const isFormValid = 
     name.trim().length > 0 && 
     email.trim().length > 0 && 
-    password.length >= 6 && 
+    hasEightChars && hasNumber && hasUppercase && hasSymbol &&
     confirmPassword === password;
 
   return (
@@ -187,6 +220,7 @@ export const RegisterScreen: React.FC = () => {
               <Animated.View style={cardAnimatedStyle}>
                 <Card variant="glass" padding="large" style={{ marginBottom: 20 }}>
                   <Input
+                    ref={nameRef}
                     label="Full Name"
                     value={name}
                     onChangeText={(text) => {
@@ -197,9 +231,15 @@ export const RegisterScreen: React.FC = () => {
                     error={nameError}
                     variant="outlined"
                     height="standard"
+                    textContentType="name"
+                    autoComplete="name"
+                    returnKeyType="next"
+                    onSubmitEditing={() => emailRef.current?.focus()}
+                    blurOnSubmit={false}
                   />
 
                   <Input
+                    ref={emailRef}
                     label="Email Address"
                     value={email}
                     onChangeText={(text) => {
@@ -212,9 +252,15 @@ export const RegisterScreen: React.FC = () => {
                     error={emailError}
                     variant="outlined"
                     height="standard"
+                    textContentType="emailAddress"
+                    autoComplete="email"
+                    returnKeyType="next"
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                    blurOnSubmit={false}
                   />
 
                   <Input
+                    ref={passwordRef}
                     label="Password"
                     value={password}
                     onChangeText={(text) => {
@@ -226,38 +272,36 @@ export const RegisterScreen: React.FC = () => {
                     error={passwordError}
                     variant="outlined"
                     height="standard"
+                    textContentType="newPassword"
+                    autoComplete="password-new"
+                    returnKeyType="next"
+                    onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                    blurOnSubmit={false}
                   />
                   
-                  {/* Password Strength Indicator Bar */}
-                  {password.length > 0 && (
-                    <View style={{ marginTop: -8, marginBottom: 16, paddingHorizontal: 4 }}>
-                      <View style={{ flexDirection: 'row', gap: 4, height: 4, borderRadius: 2, backgroundColor: theme.colors.borderLight, overflow: 'hidden', marginBottom: 6 }}>
-                        <View 
-                          style={{ 
-                            flex: 1, 
-                            backgroundColor: getPasswordStrength().score >= 1 ? getPasswordStrength().color : 'transparent' 
-                          }} 
-                        />
-                        <View 
-                          style={{ 
-                            flex: 1, 
-                            backgroundColor: getPasswordStrength().score >= 3 ? getPasswordStrength().color : 'transparent' 
-                          }} 
-                        />
-                        <View 
-                          style={{ 
-                            flex: 1, 
-                            backgroundColor: getPasswordStrength().score >= 5 ? getPasswordStrength().color : 'transparent' 
-                          }} 
-                        />
+                  {/* Live Password Requirements checklist */}
+                  <View style={{ marginTop: -8, marginBottom: 16, paddingHorizontal: 4 }}>
+                    <Typography variant="caption" color="secondary" style={{ marginBottom: 8, fontWeight: '700' }}>
+                      PASSWORD REQUIREMENTS
+                    </Typography>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                      <View style={{ width: '50%', marginBottom: 6 }}>
+                        {renderRequirement('8+ characters', hasEightChars)}
                       </View>
-                      <Typography variant="caption" style={{ color: getPasswordStrength().color, fontWeight: '600' }}>
-                        {getPasswordStrength().text}
-                      </Typography>
+                      <View style={{ width: '50%', marginBottom: 6 }}>
+                        {renderRequirement('Number', hasNumber)}
+                      </View>
+                      <View style={{ width: '50%', marginBottom: 6 }}>
+                        {renderRequirement('Uppercase', hasUppercase)}
+                      </View>
+                      <View style={{ width: '50%', marginBottom: 6 }}>
+                        {renderRequirement('Symbol', hasSymbol)}
+                      </View>
                     </View>
-                  )}
+                  </View>
 
                   <Input
+                    ref={confirmPasswordRef}
                     label="Confirm Password"
                     value={confirmPassword}
                     onChangeText={(text) => {
@@ -269,7 +313,25 @@ export const RegisterScreen: React.FC = () => {
                     error={confirmPasswordError}
                     variant="outlined"
                     height="standard"
+                    textContentType="password"
+                    autoComplete="password"
+                    returnKeyType="done"
+                    onSubmitEditing={handleRegister}
                   />
+
+                  {confirmPassword.length > 0 && (
+                    <View style={{ marginTop: -8, marginBottom: 16, paddingHorizontal: 4 }}>
+                      <Typography 
+                        variant="caption" 
+                        style={{ 
+                          color: password === confirmPassword ? theme.colors.success : theme.colors.error,
+                          fontWeight: '600'
+                        }}
+                      >
+                        {password === confirmPassword ? '✓ Passwords Match' : '✗ Passwords do not match'}
+                      </Typography>
+                    </View>
+                  )}
 
                   {/* Submit and Login Actions */}
                   <View style={{ gap: 12, marginTop: 12 }}>

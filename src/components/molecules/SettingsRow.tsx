@@ -10,6 +10,7 @@ interface SettingsRowProps {
   icon?: string;
   onPress?: () => void;
   rightComponent?: React.ReactNode;
+  noBorder?: boolean;
 }
 
 export const SettingsRow: React.FC<SettingsRowProps> = ({
@@ -18,6 +19,7 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
   icon,
   onPress,
   rightComponent,
+  noBorder = false,
 }) => {
   const { theme } = useTheme();
 
@@ -55,12 +57,17 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
     </View>
   );
 
+  const borderStyle = {
+    borderBottomWidth: noBorder ? 0 : 0.5,
+    borderBottomColor: theme.colors.borderLight,
+  };
+
   if (onPress) {
     return (
       <TouchableOpacity 
         onPress={onPress} 
         activeOpacity={0.7} 
-        style={[styles.row, { borderBottomColor: theme.colors.borderLight }]}
+        style={[styles.row, borderStyle]}
         accessibilityRole="button"
       >
         {content}
@@ -69,7 +76,7 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
   }
 
   return (
-    <View style={[styles.row, { borderBottomColor: theme.colors.borderLight }]}>
+    <View style={[styles.row, borderStyle]}>
       {content}
     </View>
   );

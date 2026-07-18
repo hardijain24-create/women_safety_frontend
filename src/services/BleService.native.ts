@@ -1,11 +1,12 @@
 import { BleManager, Device } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { Buffer } from 'buffer'; // decode base64
+import { IBleService, DeviceLike } from './BleService.types';
 
 const GUARDIAN_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const GUARDIAN_SOS_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
 
-class BleService {
+class BleService implements IBleService {
   manager: BleManager;
   connectedDevice: Device | null = null;
   onSosTriggered: (() => void) | null = null;
@@ -38,7 +39,7 @@ class BleService {
     return true;
   }
 
-  scanForDevices(onDeviceFound: (device: Device) => void, onStop: () => void) {
+  scanForDevices(onDeviceFound: (device: DeviceLike) => void, onStop: () => void) {
     console.log('[BLE] Starting device scan...');
     this.manager.startDeviceScan(
       [GUARDIAN_SERVICE_UUID], // Filter by our specific service UUID — faster & more reliable
@@ -103,7 +104,7 @@ class BleService {
     }
   }
 
-  monitorSOS(device: Device) {
+  monitorSOS(device: DeviceLike) {
     if (this.isMonitoring) {
       console.log('[BLE] Already monitoring, skipping duplicate setup.');
       return;
@@ -112,7 +113,10 @@ class BleService {
 
     console.log('[BLE] SOS Monitor subscribed. Waiting for button press...');
 
-    device.monitorCharacteristicForService(
+    // Since we are using DeviceLike interface, cast it to Device for react-native-ble-plx interaction
+    const nativeDevice = device as Device;
+
+    nativeDevice.monitorCharacteristicForService(
       GUARDIAN_SERVICE_UUID,
       GUARDIAN_SOS_CHAR_UUID,
       (error, characteristic) => {

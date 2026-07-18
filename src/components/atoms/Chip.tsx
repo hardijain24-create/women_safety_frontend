@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../theme';
 import { Typography } from './Typography';
 import { Icon } from './Icon';
@@ -85,10 +86,17 @@ export const Chip: React.FC<ChipProps> = ({
     </View>
   );
 
+  const handlePress = () => {
+    if (onPress) {
+      Haptics.selectionAsync().catch(() => {});
+      onPress();
+    }
+  };
+
   if (onPress) {
     return (
       <TouchableOpacity 
-        onPress={onPress} 
+        onPress={handlePress} 
         activeOpacity={0.8} 
         style={chipStyle}
         accessibilityRole="checkbox"

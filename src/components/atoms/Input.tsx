@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
-import { TextInput, View, ViewStyle, TextStyle, TouchableOpacity } from 'react-native';
+import React, { useState, forwardRef } from 'react';
+import { TextInput, View, ViewStyle, TextStyle, TouchableOpacity, TextInputProps } from 'react-native';
 import { useTheme } from '../../theme';
 import { Typography } from './Typography';
 import { Icon } from './Icon';
 
-interface InputProps {
+interface InputProps extends Omit<TextInputProps, 'style'> {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   label?: string;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'phone-pad' | 'numeric';
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   error?: string;
   disabled?: boolean;
   readOnly?: boolean;
@@ -28,14 +26,12 @@ interface InputProps {
   rightIcon?: React.ReactNode;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = forwardRef<TextInput, InputProps>(({
   value,
   onChangeText,
   placeholder,
   label,
   secureTextEntry = false,
-  keyboardType = 'default',
-  autoCapitalize = 'none',
   error,
   disabled = false,
   readOnly = false,
@@ -48,10 +44,12 @@ export const Input: React.FC<InputProps> = ({
   height = 'standard',
   leftIcon,
   rightIcon,
-}) => {
+  ...rest
+}, ref) => {
   const { theme } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
   const containerStyle: ViewStyle = {
     marginBottom: theme.layout.cardGap,
@@ -99,6 +97,18 @@ export const Input: React.FC<InputProps> = ({
     setIsPasswordVisible(prev => !prev);
   };
 
+  const handleTextChange = (text: string) => {
+    onChangeText(text);
+    if (secureTextEntry && text.length > value.length) {
+      const lastChar = text.charAt(text.length - 1);
+      // Check if last typed char is an uppercase letter (A-Z)
+      const isUpper = /[A-Z]/.test(lastChar);
+      setIsCapsLockOn(isUpper);
+    } else if (text.length === 0) {
+      setIsCapsLockOn(false);
+    }
+  };
+
   return (
     <View style={containerStyle}>
       {label && (
@@ -119,36 +129,48 @@ export const Input: React.FC<InputProps> = ({
         )}
         
         <TextInput
+          ref={ref}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleTextChange}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textMuted}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
-          keyboardType={keyboardType}
-          autoCapitalize={autoCapitalize}
           editable={isEditable}
           multiline={multiline}
           numberOfLines={numberOfLines}
           style={textInputStyle}
           maxLength={maxLength}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={() => {
+            setIsFocused(false);
+            setIsCapsLockOn(false);
+          }}
+          {...rest}
         />
         
         {secureTextEntry ? (
-          <TouchableOpacity 
-            onPress={handlePasswordToggle}
-            activeOpacity={0.7}
-            style={{ marginLeft: 10, padding: 4, justifyContent: 'center', alignItems: 'center' }}
-            accessibilityLabel={isPasswordVisible ? "Hide password" : "Show password"}
-            accessibilityRole="button"
-          >
-            <Icon 
-              name={isPasswordVisible ? "eye-off" : "eye"} 
-              size={20} 
-              color={theme.colors.textSecondary} 
-            />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {isCapsLockOn && (
+              <View style={{ marginRight: 8, backgroundColor: theme.colors.warning + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                <Typography variant="caption" style={{ color: theme.colors.warning, fontWeight: '700', fontSize: 10 }}>
+                  CAPS
+                </Typography>
+              </View>
+            )}
+            <TouchableOpacity 
+              onPress={handlePasswordToggle}
+              activeOpacity={0.7}
+              style={{ padding: 4, justifyContent: 'center', alignItems: 'center' }}
+              accessibilityLabel={isPasswordVisible ? "Hide password" : "Show password"}
+              accessibilityRole="button"
+            >
+              <Icon 
+                name={isPasswordVisible ? "eye-off" : "eye"} 
+                size={20} 
+                color={theme.colors.textSecondary} 
+              />
+            </TouchableOpacity>
+          </View>
         ) : rightIcon ? (
           <View style={{ marginLeft: 10, justifyContent: 'center', alignItems: 'center' }}>
             {rightIcon}
@@ -167,4 +189,6 @@ export const Input: React.FC<InputProps> = ({
       )}
     </View>
   );
-};
+});
+
+Input.displayName = 'Input';

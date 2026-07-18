@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Alert } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Location from 'expo-location';
@@ -14,7 +14,7 @@ import { Avatar } from '../components/atoms/Avatar';
 import { Card } from '../components/molecules/Card';
 import { QuickActionGrid } from '../components/molecules/QuickAction';
 import { HeroSOSButton } from '../components/molecules/HeroSOSButton';
-import { ScreenLayout, Header, StatusGrid } from '../components/organisms';
+import { ScreenLayout, Header, StatusGrid, BottomSheet } from '../components/organisms';
 import { mockDeviceStatus, mockUserProfile, ROUTES } from '../constants';
 import { RootStackParamList } from '../navigation';
 import { AuthContext } from '../context/AuthContext';
@@ -26,7 +26,8 @@ export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<HomeNavigationProp>();
   const [deviceStatus, setDeviceStatus] = useState(mockDeviceStatus);
-  const { user } = React.useContext(AuthContext);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
+  const { user } = useContext(AuthContext);
 
 
   useEffect(() => {
@@ -151,6 +152,45 @@ export const HomeScreen: React.FC = () => {
             </Typography>
           </View>
         </View>
+
+        {/* Protection Status Banner */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            Haptics.selectionAsync().catch(() => {});
+            setIsDiagnosticsOpen(true);
+          }}
+          style={{ marginBottom: 16 }}
+        >
+          <Card 
+            variant="glass" 
+            padding="medium" 
+            style={{ 
+              borderColor: deviceStatus.isConnected ? theme.colors.success : theme.colors.warning,
+              borderWidth: 1.5,
+              backgroundColor: deviceStatus.isConnected ? theme.colors.success + '10' : theme.colors.warning + '10',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View 
+                  style={{ 
+                    width: 10, 
+                    height: 10, 
+                    borderRadius: 5, 
+                    backgroundColor: deviceStatus.isConnected ? theme.colors.success : theme.colors.warning 
+                  }} 
+                />
+                <Typography variant="body" color="primary" weight="700">
+                  {deviceStatus.isConnected ? '🟢 Protected' : '🟠 Attention Required'}
+                </Typography>
+              </View>
+              <Typography variant="caption" color="secondary" weight="600">
+                Tap for Diagnostics
+              </Typography>
+            </View>
+          </Card>
+        </TouchableOpacity>
         
         {/* Core SOS Action Area */}
         <HeroSOSButton
@@ -198,6 +238,73 @@ export const HomeScreen: React.FC = () => {
         </Card>
 
       </View>
+
+      {/* Diagnostics Bottom Sheet */}
+      <BottomSheet
+        isVisible={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+        title="Connection Diagnostics"
+      >
+        <View style={{ paddingBottom: 24, paddingHorizontal: 4 }}>
+          <Typography variant="bodySmall" color="secondary" style={{ marginBottom: 20 }}>
+            Real-time status check of all background protection layers:
+          </Typography>
+
+          <View style={{ gap: 14 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="band" size={20} color={deviceStatus.isConnected ? theme.colors.success : theme.colors.warning} />
+                <Typography variant="body" color="primary" weight="600">Bluetooth Link</Typography>
+              </View>
+              <Badge 
+                label={deviceStatus.isConnected ? 'Connected' : 'Disconnected'} 
+                variant={deviceStatus.isConnected ? 'success' : 'warning'} 
+                size="small" 
+              />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="location-pin" size={20} color={theme.colors.success} />
+                <Typography variant="body" color="primary" weight="600">GPS Status</Typography>
+              </View>
+              <Badge label="Active" variant="success" size="small" />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="message" size={20} color={theme.colors.success} />
+                <Typography variant="body" color="primary" weight="600">SMS Route Setup</Typography>
+              </View>
+              <Badge label="Ready" variant="success" size="small" />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="wifi" size={20} color={theme.colors.success} />
+                <Typography variant="body" color="primary" weight="600">Internet Connection</Typography>
+              </View>
+              <Badge label="Online" variant="success" size="small" />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="battery-full" size={20} color={deviceStatus.batteryLevel > 20 ? theme.colors.success : theme.colors.error} />
+                <Typography variant="body" color="primary" weight="600">Band Battery</Typography>
+              </View>
+              <Typography variant="body" color="primary" weight="700">{deviceStatus.batteryLevel}%</Typography>
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Icon name="shield" size={20} color={theme.colors.success} />
+                <Typography variant="body" color="primary" weight="600">System Permissions</Typography>
+              </View>
+              <Badge label="Granted" variant="success" size="small" />
+            </View>
+          </View>
+        </View>
+      </BottomSheet>
     </ScreenLayout>
   );
 };

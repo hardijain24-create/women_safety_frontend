@@ -11,6 +11,8 @@ import { Icon } from '../components/atoms/Icon';
 import { EmergencyDashboard } from '../components/organisms';
 import { AuthContext } from '../context/AuthContext';
 import { AlertTriggerService } from '../services/AlertTriggerService';
+import { userApi } from '../api/services';
+import type { EmergencyContact } from '../types';
 
 type SOSMode = 'countdown' | 'active' | 'pin';
 
@@ -23,6 +25,7 @@ export const SOSScreen: React.FC = () => {
   const [countdown, setCountdown] = useState(5);
   const [activeTime, setActiveTime] = useState(0);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   
   // HOLD to cancel tracking
   const [isHoldingCancel, setIsHoldingCancel] = useState(false);
@@ -35,6 +38,21 @@ export const SOSScreen: React.FC = () => {
 
   // Background audio recording simulator flag
   const [recordingSegment, setRecordingSegment] = useState(1);
+
+  // Fetch emergency contacts list on mount
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await userApi.getProfile();
+        if (response.success && response.data.emergency_contacts) {
+          setContacts(response.data.emergency_contacts);
+        }
+      } catch (e) {
+        console.warn('Could not fetch contacts in SOSScreen:', e);
+      }
+    };
+    fetchContacts();
+  }, []);
 
   // 1. Block hardware back button on Android during SOS
   useEffect(() => {
@@ -191,6 +209,7 @@ export const SOSScreen: React.FC = () => {
             cancelProgress={0}
             onHoldStart={() => {}}
             onHoldEnd={() => {}}
+            contacts={contacts}
           />
         </View>
       </View>
@@ -281,6 +300,7 @@ export const SOSScreen: React.FC = () => {
           onHoldStart={() => setIsHoldingCancel(true)}
           onHoldEnd={() => setIsHoldingCancel(false)}
           isCountdownMode={false}
+          contacts={contacts}
         />
       </View>
     </View>

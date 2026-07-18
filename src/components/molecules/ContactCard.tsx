@@ -64,22 +64,26 @@ export const ContactCard: React.FC<ContactCardProps> = ({
               color="primary" 
               weight="600"
               numberOfLines={1}
-              style={{ maxWidth: '65%' }}
+              style={{ maxWidth: '80%' }}
             >
               {contact.name}
             </Typography>
-            {contact.isPrimary && (
-              <View style={{ marginLeft: 8 }}>
-                <Badge label="Primary" variant="primary" size="small" />
-              </View>
-            )}
           </View>
           
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-            {contact.relation && (
-              <View style={{ marginRight: 8 }}>
-                <Badge label={contact.relation} variant="neutral" size="small" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 4 }}>
+            {contact.isPrimary ? (
+              <View style={{ marginRight: 4, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Badge label="PRIMARY" variant="success" size="small" />
+                {contact.relation && (
+                  <Badge label={contact.relation} variant="neutral" size="small" />
+                )}
               </View>
+            ) : (
+              contact.relation && (
+                <View style={{ marginRight: 4 }}>
+                  <Badge label={contact.relation} variant="neutral" size="small" />
+                </View>
+              )
             )}
             <Typography variant="bodySmall" color="secondary">
               {contact.phone}

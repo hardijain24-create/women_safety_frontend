@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, AccessibilityInfo, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,10 +31,15 @@ export const LoginScreen: React.FC = () => {
   
   const [rememberMe, setRememberMe] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   const { login, isLoading: authLoading } = useContext(AuthContext);
   
   const isLoading = authLoading || localLoading;
+
+  // Refs for keyboard navigation
+  const emailRef = useRef<any>(null);
+  const passwordRef = useRef<any>(null);
 
   // Reanimated values for staggered entrance animations
   const logoOpacity = useSharedValue(0);
@@ -43,13 +48,26 @@ export const LoginScreen: React.FC = () => {
   const cardTranslateY = useSharedValue(40);
 
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      logoOpacity.value = 1;
+      logoScale.value = 1;
+      cardOpacity.value = 1;
+      cardTranslateY.value = 0;
+      return;
+    }
     // Entrance Animations
     logoOpacity.value = withTiming(1, { duration: 600 });
     logoScale.value = withTiming(1, { duration: 600 });
     
     cardOpacity.value = withDelay(150, withTiming(1, { duration: 600 }));
     cardTranslateY.value = withDelay(150, withTiming(0, { duration: 600 }));
-  }, [logoOpacity, logoScale, cardOpacity, cardTranslateY]);
+  }, [logoOpacity, logoScale, cardOpacity, cardTranslateY, reduceMotion]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
@@ -159,6 +177,7 @@ export const LoginScreen: React.FC = () => {
                   {/* Form Fields */}
                   <View style={{ marginBottom: 12 }}>
                     <Input
+                      ref={emailRef}
                       label="Email Address"
                       value={email}
                       onChangeText={(text) => {
@@ -168,13 +187,20 @@ export const LoginScreen: React.FC = () => {
                       placeholder="Enter your email"
                       keyboardType="email-address"
                       autoCapitalize="none"
+                      autoFocus={true}
                       error={emailError}
                       variant="outlined"
                       height="hero"
                       leftIcon={<Icon name="email" size={20} color={theme.colors.textMuted} />}
+                      textContentType="emailAddress"
+                      autoComplete="email"
+                      returnKeyType="next"
+                      onSubmitEditing={() => passwordRef.current?.focus()}
+                      blurOnSubmit={false}
                     />
                     
                     <Input
+                      ref={passwordRef}
                       label="Password"
                       value={password}
                       onChangeText={(text) => {
@@ -187,6 +213,10 @@ export const LoginScreen: React.FC = () => {
                       variant="outlined"
                       height="hero"
                       leftIcon={<Icon name="settings" size={20} color={theme.colors.textMuted} />}
+                      textContentType="password"
+                      autoComplete="password"
+                      returnKeyType="done"
+                      onSubmitEditing={handleLogin}
                     />
                   </View>
 
@@ -231,10 +261,11 @@ export const LoginScreen: React.FC = () => {
                     </TouchableOpacity>
 
                     <TouchableOpacity 
-                      activeOpacity={0.7}
+                      activeOpacity={0.6}
                       accessibilityLabel="Retrieve forgotten password"
                       accessibilityRole="button"
-                      onPress={() => Alert.alert("Reset Password", "A password reset link will be sent to your registered email address.")}
+                      onPress={() => Alert.alert("Support Required", "Password reset self-service is offline. Please email support@guardianband.com to reset your credentials.")}
+                      style={{ opacity: 0.6 }}
                     >
                       <Typography variant="bodySmall" style={{ color: theme.colors.primary, fontWeight: '600' }}>
                         Forgot Password?

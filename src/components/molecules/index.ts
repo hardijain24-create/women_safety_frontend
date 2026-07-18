@@ -9,3 +9,5 @@ export { SettingsRow } from './SettingsRow';
 export { InfoTile } from './InfoTile';
 export { PermissionCard } from './PermissionCard';
 export { HeroSOSButton } from './HeroSOSButton';
+export { BluetoothUnavailable } from './BluetoothUnavailable';
+

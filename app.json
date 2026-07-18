@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -35,17 +35,7 @@
           "microphonePermission": "Allow Guardian Band to access your microphone for SOS alerts."
         }
       ],
-      [
-        "react-native-ble-plx",
-        {
-          "isBackgroundEnabled": true,
-          "modes": [
-            "peripheral",
-            "central"
-          ],
-          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to Guardian Band for SOS alerts."
-        }
-      ],
+      "react-native-ble-plx",
       "expo-asset"
     ],
     "extra": {

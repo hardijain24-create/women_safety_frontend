@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, ViewStyle } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../theme';
 import { Icon } from './Icon';
 
@@ -64,9 +65,15 @@ export const IconButton: React.FC<IconButtonProps> = ({
     opacity: disabled ? theme.opacity.disabled : 1,
   };
 
+  const handlePress = async () => {
+    if (disabled) return;
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onPress();
+  };
+
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
       activeOpacity={theme.opacity.pressed}
       style={buttonStyle}

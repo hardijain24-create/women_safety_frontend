@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { View, ScrollView, RefreshControl, Alert, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 import { Typography } from '../components/atoms/Typography';
-import { Icon } from '../components/atoms/Icon';
 import { Chip } from '../components/atoms/Chip';
-import { Loader } from '../components/atoms/Loader';
+import { Skeleton } from '../components/atoms/Skeleton';
+import { Icon } from '../components/atoms/Icon';
+import { Button } from '../components/atoms/Button';
 import { Card } from '../components/molecules/Card';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { ScreenLayout, Header } from '../components/organisms/Header';
@@ -61,16 +62,28 @@ export const AlertsScreen: React.FC = () => {
     return true;
   });
 
-  // Grouping logic: Today vs This Week
+  // Grouping logic: Today vs Yesterday vs Last 7 Days vs Older
   const todayAlerts: AlertItem[] = [];
-  const thisWeekAlerts: AlertItem[] = [];
+  const yesterdayAlerts: AlertItem[] = [];
+  const last7DaysAlerts: AlertItem[] = [];
+  const olderAlerts: AlertItem[] = [];
 
   filteredAlerts.forEach(alert => {
     const time = alert.timestamp.toLowerCase();
-    if (time.includes('today') || time.includes('min ago') || time.includes('hour ago')) {
+    if (time.includes('today') || time.includes('min ago') || time.includes('hour ago') || time.includes('sec ago')) {
       todayAlerts.push(alert);
+    } else if (time.includes('yesterday')) {
+      yesterdayAlerts.push(alert);
+    } else if (time.includes('day ago') || time.includes('days ago')) {
+      const match = time.match(/(\d+)\s+days?\s+ago/);
+      const days = match ? parseInt(match[1], 10) : 2;
+      if (days <= 7) {
+        last7DaysAlerts.push(alert);
+      } else {
+        olderAlerts.push(alert);
+      }
     } else {
-      thisWeekAlerts.push(alert);
+      olderAlerts.push(alert);
     }
   });
 
@@ -111,7 +124,9 @@ export const AlertsScreen: React.FC = () => {
         }
       >
         {isLoading && !refreshing ? (
-          <Loader text="Syncing safety records..." />
+          <View style={{ marginTop: 12 }}>
+            <Skeleton variant="list" />
+          </View>
         ) : (
           <View>
             {filteredAlerts.length > 0 ? (
@@ -128,13 +143,37 @@ export const AlertsScreen: React.FC = () => {
                   </View>
                 )}
 
-                {/* This Week's Section */}
-                {thisWeekAlerts.length > 0 && (
+                {/* Yesterday's Section */}
+                {yesterdayAlerts.length > 0 && (
                   <View style={{ marginBottom: 20 }}>
                     <Typography variant="label" color="secondary" style={styles.sectionHeader}>
-                      THIS WEEK
+                      YESTERDAY
                     </Typography>
-                    {thisWeekAlerts.map(alert => (
+                    {yesterdayAlerts.map(alert => (
+                      <AlertCard key={alert.id} alert={alert} />
+                    ))}
+                  </View>
+                )}
+
+                {/* Last 7 Days Section */}
+                {last7DaysAlerts.length > 0 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <Typography variant="label" color="secondary" style={styles.sectionHeader}>
+                      LAST 7 DAYS
+                    </Typography>
+                    {last7DaysAlerts.map(alert => (
+                      <AlertCard key={alert.id} alert={alert} />
+                    ))}
+                  </View>
+                )}
+
+                {/* Older Section */}
+                {olderAlerts.length > 0 && (
+                  <View style={{ marginBottom: 20 }}>
+                    <Typography variant="label" color="secondary" style={styles.sectionHeader}>
+                      OLDER
+                    </Typography>
+                    {olderAlerts.map(alert => (
                       <AlertCard key={alert.id} alert={alert} />
                     ))}
                   </View>
@@ -144,20 +183,25 @@ export const AlertsScreen: React.FC = () => {
               /* Empty History Placeholder */
               <Card variant="default" padding="large" style={styles.emptyCard}>
                 <Icon
-                  name="alerts"
+                  name="shield"
                   size={48}
-                  color={theme.colors.textMuted}
-                  backgroundColor={theme.colors.backgroundSecondary}
+                  color={theme.colors.success}
+                  backgroundColor={theme.colors.success + '12'}
                   containerStyle={{ marginBottom: 16 }}
                 />
-                <Typography variant="bodyLarge" color="primary" weight="600" align="center">
-                  All clear. No logs found.
+                <Typography variant="bodyLarge" color="primary" weight="700" align="center">
+                  Everything looks safe
                 </Typography>
-                <Typography variant="bodySmall" color="muted" align="center" style={{ marginTop: 6, maxWidth: 240 }}>
-                  {activeFilter === 'All' 
-                    ? "Your safety tracking is active. Trigger events will be logged here." 
-                    : "No warning logs found matching your selected severity level."}
+                <Typography variant="bodySmall" color="muted" align="center" style={{ marginTop: 8, marginBottom: 20, maxWidth: 260, lineHeight: 18 }}>
+                  We'll notify you immediately if anything needs your attention.
                 </Typography>
+                <Button 
+                  title="Learn More"
+                  onPress={() => Alert.alert("System Health", "The Guardian Band application monitors Bluetooth connectivity, GPS sync, and emergency contact delivery routes in real-time. Keep the app open in the background for continuous tracking.")}
+                  variant="outline"
+                  size="medium"
+                  style={{ paddingHorizontal: 24 }}
+                />
               </Card>
             )}
           </View>
