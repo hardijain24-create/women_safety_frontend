@@ -190,6 +190,9 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   const contentStyle: ViewStyle = {
     paddingHorizontal: theme.layout.screenPadding,
     paddingBottom: theme.layout.fabBottom,
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
     ...contentContainerStyle,
   };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Linking, Platform } from 'react-native';
 import * as Location from 'expo-location';
 
-import { Button, Typography, Toggle, Avatar } from '../../components/atoms';
+import { Button, Typography, Toggle, Avatar, Input } from '../../components/atoms';
 import { Card } from '../../components/molecules';
 import { ScreenLayout, Header } from '../../components/organisms';
 import { SettingsSection } from '../../components/organisms/SettingsSection';
@@ -11,10 +11,11 @@ import { PermissionCard } from '../../components/molecules/PermissionCard';
 import { AuthContext } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import BleService from '../../services/BleService';
+import { authApi } from '../../api/services';
 import { showAlert } from '../../utils/alert';
 
 export const ProfileScreen: React.FC = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, updateUser } = useContext(AuthContext);
 
   const {
     vibrationEnabled,
@@ -27,6 +28,30 @@ export const ProfileScreen: React.FC = () => {
 
   const [gpsPermission, setGpsPermission] = useState<'granted' | 'denied' | 'requesting'>('requesting');
   const [blePermission, setBlePermission] = useState<'granted' | 'denied' | 'requesting'>('requesting');
+
+  const [pin, setPin] = useState(user?.safety_pin || '');
+  const [isSavingPin, setIsSavingPin] = useState(false);
+
+  const handleSavePin = async () => {
+    if (pin.length !== 4) {
+      showAlert('Invalid PIN', 'Safety PIN must be exactly 4 digits.');
+      return;
+    }
+    setIsSavingPin(true);
+    try {
+      const res = await authApi.updateProfile({ safety_pin: pin });
+      if (res.success && res.data) {
+        updateUser(res.data);
+        showAlert('Success', 'Safety PIN updated successfully!');
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error: any) {
+      showAlert('Error', error.message || 'Failed to save PIN.');
+    } finally {
+      setIsSavingPin(false);
+    }
+  };
 
   const checkPermissions = async () => {
     if (Platform.OS === 'web') {
@@ -91,6 +116,24 @@ export const ProfileScreen: React.FC = () => {
         {/* Preferences Toggles */}
 
         <SettingsSection title="Safety & Sync">
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+            <Typography variant="label" color="secondary" weight="500" style={{ marginBottom: 8 }}>
+              Emergency Deactivation PIN
+            </Typography>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  value={pin}
+                  onChangeText={(text) => setPin(text.replace(/[^0-9]/g, '').slice(0, 4))}
+                  placeholder="4-digit PIN"
+                  secureTextEntry
+                  keyboardType="numeric"
+                  maxLength={4}
+                />
+              </View>
+              <Button title="Save" onPress={handleSavePin} loading={isSavingPin} variant="primary" size="medium" />
+            </View>
+          </View>
           <SettingsRow label="Auto Connect Wearable" description="Background device auto pairing" icon="band" rightComponent={<Toggle value={autoConnect} onValueChange={setAutoConnect} size="large" />} />
           <SettingsRow label="Haptic Feedback Click" description="Vibrate on safety actions" icon="vibrate" rightComponent={<Toggle value={vibrationEnabled} onValueChange={setVibrationEnabled} size="large" />} />
           <SettingsRow label="Acoustic Emergency Siren" description="Sound siren alarm during SOS" icon="volume" noBorder rightComponent={<Toggle value={alarmEnabled} onValueChange={setAlarmEnabled} size="large" />} />

@@ -139,25 +139,22 @@ export const HomeScreen: React.FC = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Safety Status Hero Ring */}
-        <View style={styles.heroContainer}>
-          <ProgressRing
-            progress={100}
-            size={180}
-            strokeWidth={8}
-            color={theme.colors.primary}
-            showText={false}
-          />
-          <View style={styles.heroTextContainer}>
-            <Icon name="shield" size={32} color={theme.colors.primary} containerStyle={{ marginBottom: 4 }} />
-            <Typography variant="h3" color="primary" weight="600" style={{ fontSize: 20 }}>
-              You're Safe
-            </Typography>
-            <Typography variant="caption" color="muted" style={{ marginTop: 2 }}>
-              Last sync: Just now
-            </Typography>
+        {/* Safety Status Hero Banner */}
+        <Card variant="glass" padding="medium" style={styles.heroCard}>
+          <View style={styles.heroBannerContent}>
+            <View style={styles.shieldIconContainer}>
+              <Icon name="shield" size={28} color={theme.colors.primary} />
+            </View>
+            <View>
+              <Typography variant="h3" color="primary" weight="600" style={{ fontSize: 20 }}>
+                You're Safe
+              </Typography>
+              <Typography variant="caption" color="muted" style={{ marginTop: 2 }}>
+                Last sync: Just now
+              </Typography>
+            </View>
           </View>
-        </View>
+        </Card>
 
         {/* Large SOS Action Button moved up */}
         <View style={[styles.sosContainer, { marginVertical: theme.layout.sectionGap }]}>
@@ -272,18 +269,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  heroContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  heroCard: {
+    maxWidth: 420,
+    width: '100%',
     marginBottom: 18,
-    position: 'relative',
-    width: 180,
-    height: 180,
   },
-  heroTextContainer: {
-    position: 'absolute',
+  heroBannerContent: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  shieldIconContainer: {
+    marginRight: 16,
+    padding: 12,
+    borderRadius: 24,
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
   },
   locationCard: {
     maxWidth: 420,
