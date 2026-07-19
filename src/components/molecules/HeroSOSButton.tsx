@@ -25,13 +25,13 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
   const { theme } = useTheme();
   const [reduceMotion, setReduceMotion] = useState(false);
 
-  const activePulseColor = pulseColor || theme.colors.primary;
+  const activePulseColor = pulseColor || theme.colors.error;
 
   // Reanimated values for breathing pulse rings
   const ring1Scale = useSharedValue(1);
-  const ring1Opacity = useSharedValue(0.4);
+  const ring1Opacity = useSharedValue(0.2);
   const ring2Scale = useSharedValue(1);
-  const ring2Opacity = useSharedValue(0.4);
+  const ring2Opacity = useSharedValue(0.1);
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
@@ -50,7 +50,7 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
 
     // Pulse Ring 1 Loop
     ring1Scale.value = withRepeat(
-      withTiming(1.6, { duration: 3000 }),
+      withTiming(1.8, { duration: 3000 }),
       -1,
       false
     );
@@ -63,7 +63,7 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
     // Pulse Ring 2 Loop (1.5s offset)
     const timeout = setTimeout(() => {
       ring2Scale.value = withRepeat(
-        withTiming(1.6, { duration: 3000 }),
+        withTiming(2.4, { duration: 3000 }),
         -1,
         false
       );
@@ -121,7 +121,7 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
       <Button
         title="SOS"
         onPress={onPress}
-        variant="primary"
+        variant="danger"
         size="sos"
         style={{
           width: size,
@@ -129,14 +129,17 @@ export const HeroSOSButton: React.FC<HeroSOSButtonProps> = ({
           borderRadius: size / 2,
           alignItems: 'center',
           justifyContent: 'center',
-          elevation: 8,
+          elevation: 6,
+          borderWidth: 4,
+          borderColor: theme.colors.errorDark,
           shadowColor: '#000000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.15,
-          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          paddingHorizontal: 0,
         }}
         textStyle={{
-          fontSize: theme.typography.size4xl + 12,
+          fontSize: theme.typography.size4xl + 4,
           fontWeight: '800',
           color: theme.colors.textInverse,
         }}

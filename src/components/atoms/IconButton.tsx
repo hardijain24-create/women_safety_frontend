@@ -1,6 +1,7 @@
-import React from 'react';
-import { TouchableOpacity, ViewStyle } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TouchableOpacity, ViewStyle, AccessibilityInfo } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
 import { Icon } from './Icon';
 
@@ -24,6 +25,14 @@ export const IconButton: React.FC<IconButtonProps> = ({
   disabled = false,
 }) => {
   const { theme } = useTheme();
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
 
   const getResolvedSizes = () => {
     const isSm = size === 'small' || size === 'sm';
@@ -65,20 +74,44 @@ export const IconButton: React.FC<IconButtonProps> = ({
     opacity: disabled ? theme.opacity.disabled : 1,
   };
 
+  const handlePressIn = () => {
+    if (reduceMotion || disabled) return;
+    scale.value = withSpring(0.97, {
+      damping: theme.animation.spring.damping,
+      stiffness: theme.animation.spring.stiffness,
+    });
+  };
+
+  const handlePressOut = () => {
+    if (reduceMotion || disabled) return;
+    scale.value = withSpring(1, {
+      damping: theme.animation.spring.damping,
+      stiffness: theme.animation.spring.stiffness,
+    });
+  };
+
   const handlePress = async () => {
     if (disabled) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     onPress();
   };
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      disabled={disabled}
-      activeOpacity={theme.opacity.pressed}
-      style={buttonStyle}
-    >
-      <Icon name={icon} size={iconSize} color={getIconColor()} />
-    </TouchableOpacity>
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        activeOpacity={theme.opacity.pressed}
+        style={buttonStyle}
+      >
+        <Icon name={icon} size={iconSize} color={getIconColor()} />
+      </TouchableOpacity>
+    </Animated.View>
   );
 };

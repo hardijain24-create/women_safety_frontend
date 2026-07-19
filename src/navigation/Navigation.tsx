@@ -9,17 +9,20 @@ import { AuthContext } from '../context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 
 // Auth Screens
-import { LoginScreen } from '../screens/LoginScreen';
-import { RegisterScreen } from '../screens/RegisterScreen';
+import { LoginScreen } from '../features/auth/LoginScreen';
+import { RegisterScreen } from '../features/auth/RegisterScreen';
+
 
 // Main Screens
-import { HomeScreen } from '../screens/HomeScreen';
+import { HomeScreen } from '../features/home/HomeScreen';
 import { LocationScreen } from '../screens/LocationScreen';
-import { BandScreen } from '../screens/BandScreen';
-import { ContactsScreen } from '../screens/ContactsScreen';
-import { AlertsScreen } from '../screens/AlertsScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
-import { SOSScreen } from '../screens/SOSScreen';
+import { BandScreen } from '../features/device/BandScreen';
+import { ContactsScreen } from '../features/contacts/ContactsScreen';
+import { AlertsScreen } from '../features/alerts/AlertsScreen';
+import { ProfileScreen } from '../features/profile/ProfileScreen';
+import { SOSScreen } from '../features/sos/SOSScreen';
+
+
 
 // Types
 export type AuthStackParamList = {
@@ -46,12 +49,81 @@ const AuthStack = createStackNavigator<AuthStackParamList>();
 const MainTab = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createStackNavigator<RootStackParamList>();
 
+const customCardStyleInterpolator = ({ current, next }: any) => {
+  const progress = current.progress;
+  
+  const opacity = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const translateY = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [30, 0],
+    extrapolate: 'clamp',
+  });
+
+  const scale = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.97, 1],
+    extrapolate: 'clamp',
+  });
+
+  const nextScale = next
+    ? next.progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0.97],
+        extrapolate: 'clamp',
+      })
+    : 1;
+
+  const nextOpacity = next
+    ? next.progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0.5],
+        extrapolate: 'clamp',
+      })
+    : 1;
+
+  return {
+    cardStyle: {
+      opacity: next ? nextOpacity : opacity,
+      transform: [
+        { translateY: next ? 0 : translateY },
+        { scale: next ? nextScale : scale },
+      ],
+    },
+  };
+};
+
+const fastTransitionSpec = {
+  open: {
+    animation: 'timing' as const,
+    config: {
+      duration: 200,
+    },
+  },
+  close: {
+    animation: 'timing' as const,
+    config: {
+      duration: 200,
+    },
+  },
+};
+
+const transitionOptions: StackNavigationOptions = {
+  transitionSpec: fastTransitionSpec,
+  cardStyleInterpolator: customCardStyleInterpolator,
+};
+
 const AuthStackNavigator: React.FC = () => {
   const { theme } = useTheme();
   
   const screenOptions: StackNavigationOptions = {
     headerShown: false,
     cardStyle: { backgroundColor: theme.colors.background },
+    ...transitionOptions,
   };
 
   return (
@@ -67,26 +139,25 @@ const MainTabNavigator: React.FC = () => {
 
   const screenOptions = ({ route }: { route: { name: string } }): BottomTabNavigationOptions => ({
     headerShown: false,
+    animation: 'fade',
     tabBarStyle: {
       backgroundColor: theme.colors.card,
-      borderTopWidth: 0,
-      elevation: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+      elevation: 0,
       shadowColor: theme.colors.shadow,
-      shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      height: 88,
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.03,
+      shadowRadius: 4,
+      height: 84,
       paddingBottom: 16,
       paddingTop: 12,
-      borderRadius: 28,
-      marginHorizontal: 16,
-      marginBottom: 16,
     },
-    tabBarActiveTintColor: theme.colors.gold,
+    tabBarActiveTintColor: theme.colors.error,
     tabBarInactiveTintColor: theme.colors.textMuted,
     tabBarLabelStyle: {
       fontSize: 12,
-      fontWeight: '600',
+      fontWeight: '500',
       marginTop: 4,
     },
     tabBarIcon: ({ color, size }: { color: string; size: number }) => {
@@ -165,7 +236,7 @@ export const Navigation: React.FC = () => {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Navigator screenOptions={{ headerShown: false, ...transitionOptions }}>
         {userToken == null ? (
           <RootStack.Screen name="Auth" component={AuthStackNavigator} />
         ) : (

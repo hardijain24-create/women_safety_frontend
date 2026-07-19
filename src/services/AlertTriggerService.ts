@@ -1,9 +1,17 @@
-import { Alert, Platform, Vibration, PermissionsAndroid } from 'react-native';
+import { Platform, Vibration, PermissionsAndroid } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { alertApi } from '../api/services';
+import { showAlert } from '../utils/alert';
+
 // @ts-ignore
-import { SmsSender } from '../../modules/sms-sender';
+let SmsSender: any = null;
+try {
+  SmsSender = require('../../modules/sms-sender').SmsSender;
+} catch (e) {
+  console.warn('[AlertTriggerService] Native SmsSender module unavailable. Using backend fallback.');
+}
 
 type User = {
   id: string;
@@ -14,16 +22,20 @@ type User = {
 
 export const AlertTriggerService = {
   async triggerSOS(user: User | null): Promise<void> {
+    // Start local alarm feedback instantly
+    this.playSOSFeedback();
+
     try {
       if (!user?.id) {
         console.warn("User not found, proceeding with local SOS actions.");
-        return;
+        throw new Error("Could not reach server — local alarm only");
       }
+
 
       // 📍 Get REAL location
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required to send SOS.');
+        showAlert('Permission Denied', 'Location permission is required to send SOS.');
         return;
       }
 
@@ -53,14 +65,22 @@ export const AlertTriggerService = {
               for (const contact of user.emergency_contacts) {
                 if (contact.phone) {
                   try {
-                    await SmsSender.sendDirectSMS(contact.phone, message);
-                    sentCount++;
+                    if (SmsSender) {
+                      await SmsSender.sendDirectSMS(contact.phone, message);
+                      sentCount++;
+                    } else {
+                      throw new Error('SmsSender native module not available');
+                    }
                   } catch (smsError) {
                     console.log(`Direct SMS failed for ${contact.phone}, trying Intent...`, smsError);
                     // Fall back to opening SMS app pre-filled
                     try {
-                      await SmsSender.openSMSIntent(contact.phone, message);
-                      sentCount++;
+                      if (SmsSender) {
+                        await SmsSender.openSMSIntent(contact.phone, message);
+                        sentCount++;
+                      } else {
+                        console.log(`Intent SMS failed for ${contact.phone}: SmsSender native module not available`);
+                      }
                     } catch (intentError) {
                       console.log(`Intent SMS also failed for ${contact.phone}`, intentError);
                     }
@@ -79,7 +99,11 @@ export const AlertTriggerService = {
               const firstContact = user.emergency_contacts.find(c => c.phone);
               if (firstContact?.phone) {
                 try {
-                  await SmsSender.openSMSIntent(firstContact.phone, message);
+                  if (SmsSender) {
+                    await SmsSender.openSMSIntent(firstContact.phone, message);
+                  } else {
+                    console.log("Intent SMS failed: SmsSender native module not available");
+                  }
                   // Don't skip Twilio — Intent SMS needs manual user tap, others won't get it
                 } catch (e) {
                   console.log("Intent SMS also failed", e);
@@ -99,16 +123,25 @@ export const AlertTriggerService = {
         longitude: location.coords.longitude,
         skip_sms: skipTwilioSms,
       });
-
-      // Provide Feedback
-      this.playSOSFeedback();
       
     } catch (e: any) {
+
       throw new Error(e.response?.data?.message || e.message);
     }
   },
 
-  playSOSFeedback() {
+  async playSOSFeedback() {
+    try {
+      const storedVib = await AsyncStorage.getItem('settings_vibration');
+      const vibrationEnabled = storedVib !== 'false';
+      if (!vibrationEnabled) {
+        console.log('[AlertTriggerService] playSOSFeedback skipped: vibrationEnabled is false');
+        return;
+      }
+    } catch (err) {
+      console.error('Error loading settings in playSOSFeedback:', err);
+    }
+
     // Vibration pattern (SOS in Morse: ... --- ...)
     Vibration.vibrate([200, 100, 200, 100, 200, 300, 600, 100, 600, 100, 600, 300, 200, 100, 200, 100, 200], true);
     
@@ -122,3 +155,4 @@ export const AlertTriggerService = {
     }, 3000);
   }
 };
+

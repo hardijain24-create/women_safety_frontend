@@ -1,9 +1,2 @@
-export { LoginScreen } from './LoginScreen';
-export { RegisterScreen } from './RegisterScreen';
-export { HomeScreen } from './HomeScreen';
 export { LocationScreen } from './LocationScreen';
-export { BandScreen } from './BandScreen';
-export { ContactsScreen } from './ContactsScreen';
-export { AlertsScreen } from './AlertsScreen';
-export { ProfileScreen } from './ProfileScreen';
-export { SOSScreen } from './SOSScreen';
+

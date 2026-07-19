@@ -36,7 +36,8 @@
         }
       ],
       "react-native-ble-plx",
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "extra": {
       "eas": {

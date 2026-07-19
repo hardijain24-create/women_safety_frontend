@@ -1,7 +1,7 @@
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface ColorTheme {
-  // Background colors
+  // Background colors 
   background: string;
   backgroundSecondary: string;
   card: string;
@@ -10,6 +10,7 @@ export interface ColorTheme {
   // Text colors
   textPrimary: string;
   textSecondary: string;
+  textTertiary: string;
   textMuted: string;
   textInverse: string;
   
@@ -31,6 +32,7 @@ export interface ColorTheme {
   success: string;
   warning: string;
   error: string;
+  errorDark: string;
   info: string;
   neutral: string;
   muted: string;
@@ -168,10 +170,16 @@ export interface HeroTheme {
   header: number;
 }
 
+export interface FontFamilyTheme {
+  heading: string;
+  body: string;
+}
+
 export interface Theme {
   colors: ColorTheme;
   spacing: SpacingTheme;
   typography: TypographyTheme;
+  fontFamily: FontFamilyTheme;
   isDark: boolean;
   zIndex: ZIndexTheme;
   opacity: OpacityTheme;
@@ -237,7 +245,10 @@ export interface UserProfile {
   vibrationEnabled: boolean;
   alarmEnabled: boolean;
   autoConnectBand: boolean;
+  safety_pin?: string;
+  deactivation_pin?: string;
 }
+
 
 export interface BandSettings {
   vibrationEnabled: boolean;

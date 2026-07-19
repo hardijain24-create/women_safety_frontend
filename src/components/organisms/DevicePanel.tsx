@@ -50,7 +50,7 @@ export const DevicePanel: React.FC<DevicePanelProps> = ({
   };
 
   return (
-    <Card variant="glass" padding="large">
+    <Card variant="glass" padding="medium">
       <View style={{ alignItems: 'center' }}>
         {/* Band Icon Core */}
         <View
@@ -73,7 +73,7 @@ export const DevicePanel: React.FC<DevicePanelProps> = ({
           />
         </View>
 
-        <Typography variant="h3" color="primary" weight="700" style={{ marginBottom: theme.spacing.xs }}>
+        <Typography variant="h3" color="primary" weight="600" style={{ marginBottom: theme.spacing.xs }}>
           {isConnected ? `${deviceName} Connected` : `${deviceName} Disconnected`}
         </Typography>
         

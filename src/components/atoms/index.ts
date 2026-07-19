@@ -11,3 +11,5 @@ export { Chip } from './Chip';
 export { Loader } from './Loader';
 export { ProgressRing } from './ProgressRing';
 export { Skeleton } from './Skeleton';
+export { FloatingHUD } from './FloatingHUD';
+

@@ -81,7 +81,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           {/* Optional Title Header */}
           {title && (
             <View style={styles.header}>
-              <Typography variant="h3" color="primary" weight="700">
+              <Typography variant="h3" color="primary" weight="600">
                 {title}
               </Typography>
               <IconButton 

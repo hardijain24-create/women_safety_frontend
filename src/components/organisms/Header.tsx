@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
         />
       );
     }
-    return <View style={{ width: 44 }} />;
+    return null;
   };
 
   const renderRight = () => {
@@ -117,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
         </TouchableOpacity>
       );
     }
-    return <View style={{ width: 44 }} />;
+    return null;
   };
 
   return (
@@ -139,12 +139,12 @@ export const Header: React.FC<HeaderProps> = ({
       >
         {renderLeft()}
 
-        <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: theme.spacing.sm + 4 }}>
-          <Typography variant="h4" color="primary" align="center" weight="700">
+        <View style={{ flex: 1, alignItems: 'flex-start', paddingHorizontal: theme.spacing.sm }}>
+          <Typography variant="h3" color="primary" align="left" weight="600">
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="caption" color="muted" align="center" style={{ marginTop: theme.spacing.xs / 2 }}>
+            <Typography variant="caption" color="muted" align="left" style={{ marginTop: 2, marginLeft: 2 }}>
               {subtitle}
             </Typography>
           )}

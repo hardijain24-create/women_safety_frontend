@@ -1,9 +1,13 @@
 import { IBleService, DeviceLike } from './BleService.types';
 
 class BleService implements IBleService {
+  isAvailable(): boolean {
+    return false;
+  }
+
   requestPermissions(): Promise<boolean> {
     console.warn('[BLE] requestPermissions() called on Web: Bluetooth is unsupported on the web version.');
-    return Promise.resolve(false);
+    return Promise.reject(new Error('Bluetooth is unsupported on the web version.'));
   }
 
   scanForDevices(_onDeviceFound: (device: DeviceLike) => void, onStop: () => void): void {
@@ -28,6 +32,16 @@ class BleService implements IBleService {
     return Promise.resolve();
   }
 
+  testVibration(): Promise<void> {
+    console.warn('[BLE] testVibration() called on Web: Bluetooth is unsupported on the web version.');
+    return Promise.reject(new Error('Not supported on web'));
+  }
+
+  testAlarm(): Promise<void> {
+    console.warn('[BLE] testAlarm() called on Web: Bluetooth is unsupported on the web version.');
+    return Promise.reject(new Error('Not supported on web'));
+  }
+
   monitorSOS(_device: DeviceLike): void {
     console.warn('[BLE] monitorSOS() called on Web: Bluetooth is unsupported on the web version.');
   }
@@ -39,6 +53,16 @@ class BleService implements IBleService {
   isConnected(): boolean {
     return false;
   }
+
+  subscribeConnectionState(callback: (connected: boolean) => void): () => void {
+    callback(false);
+    return () => {};
+  }
+
+  subscribeTelemetry(_callback: (telemetry: { battery: number | 'Unavailable'; rssi: number | 'Unavailable'; firmware: string | 'Unavailable' }) => void): () => void {
+    return () => {};
+  }
 }
 
 export default new BleService();
+

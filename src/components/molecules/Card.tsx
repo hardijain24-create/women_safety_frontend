@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, ViewStyle, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ViewStyle, TouchableOpacity, AccessibilityInfo } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useTheme, elevation } from '../../theme';
 
 interface CardProps {
@@ -24,8 +25,14 @@ export const Card: React.FC<CardProps> = ({
   accessibilityRole,
 }) => {
   const { theme } = useTheme();
-  
+  const [reduceMotion, setReduceMotion] = useState(false);
   const scale = useSharedValue(1);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
 
   const paddingStyles = {
     none: { padding: 0 },
@@ -104,14 +111,23 @@ export const Card: React.FC<CardProps> = ({
   }));
 
   const handlePressIn = () => {
+    if (reduceMotion) return;
     if (variant === 'interactive' || onPress) {
-      scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
+      scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
     }
   };
 
   const handlePressOut = () => {
+    if (reduceMotion) return;
     if (variant === 'interactive' || onPress) {
       scale.value = withSpring(1);
+    }
+  };
+
+  const handlePress = async () => {
+    if (onPress) {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      onPress();
     }
   };
 
@@ -134,7 +150,7 @@ export const Card: React.FC<CardProps> = ({
     return (
       <Animated.View style={animatedStyle}>
         <TouchableOpacity
-          onPress={onPress}
+          onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           activeOpacity={0.9}

@@ -35,7 +35,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         leftIcon={<Icon name="search" size={18} color={theme.colors.textMuted} />}
         rightIcon={
           value.length > 0 ? (
-            <TouchableOpacity onPress={handleClear} activeOpacity={0.7} style={styles.clearButton}>
+            <TouchableOpacity 
+              onPress={handleClear} 
+              activeOpacity={0.7} 
+              style={[styles.clearButton, { backgroundColor: theme.colors.backgroundSecondary }]}
+            >
               <Icon name="close" size={14} color={theme.colors.textMuted} />
             </TouchableOpacity>
           ) : undefined
@@ -59,7 +63,6 @@ const styles = StyleSheet.create({
   clearButton: {
     padding: 6,
     borderRadius: 12,
-    backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },

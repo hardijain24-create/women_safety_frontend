@@ -1,88 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import { View, Alert, TouchableOpacity, Linking, StyleSheet } from 'react-native';
-import * as Location from 'expo-location';
+import React, { useEffect, useContext } from 'react';
+import { View, Linking, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../theme';
 import { Typography } from '../components/atoms/Typography';
 import { Icon } from '../components/atoms/Icon';
-import { Badge } from '../components/atoms/Badge';
 import { Button } from '../components/atoms/Button';
 import { Loader } from '../components/atoms/Loader';
+import { Badge } from '../components/atoms/Badge';
 import { Card } from '../components/molecules/Card';
 import { InfoTile } from '../components/molecules/InfoTile';
 import { StatusBadge } from '../components/molecules/StatusBadge';
 import { ScreenLayout, Header } from '../components/organisms';
+import { useLocation } from '../hooks/useLocation';
+import { AuthContext } from '../context/AuthContext';
+import { showAlert } from '../utils/alert';
 
 export const LocationScreen: React.FC = () => {
   const { theme } = useTheme();
+  const { user } = useContext(AuthContext);
   
-  const [isSharing, setIsSharing] = useState(false);
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [address, setAddress] = useState<string>('Fetching address...');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    location,
+    address,
+    error: errorMsg,
+    loading,
+    isSharing,
+    fetchLocation,
+    shareLocation,
+    stopSharing,
+  } = useLocation();
 
   useEffect(() => {
     fetchLocation();
   }, []);
 
-  const fetchLocation = async () => {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
-      
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Location permission is required to fetch and share your live coordinates.');
-        setLoading(false);
-        return;
-      }
-
-      let loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc);
-      
-      // Fetch human-readable address
-      const reverseGeocode = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-
-      if (reverseGeocode.length > 0) {
-        const addr = reverseGeocode[0];
-        const formattedAddress = `${addr.name || ''} ${addr.street || ''}, ${addr.city || ''}, ${addr.region || ''} ${addr.postalCode || ''}`;
-        setAddress(formattedAddress.trim() || 'Unknown address');
-      }
-    } catch (error) {
-      console.error('Error fetching location:', error);
-      setErrorMsg('Failed to get location data. Ensure GPS is enabled.');
-    } finally {
-      setLoading(false);
+  const handleStartSharing = async () => {
+    if (!user?.id) {
+      showAlert('Sign In Needed', 'Please log in to share your coordinates.');
+      return;
     }
-  };
-
-  const handleStartSharing = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    setIsSharing(true);
-    Alert.alert('Live Sharing Enabled', 'Your emergency contacts can now view your live coordinate feed.');
+    try {
+      await shareLocation(user.id);
+      showAlert('Live Sharing Enabled', 'Your emergency contacts can now view your live coordinate feed.');
+    } catch (e: any) {
+      showAlert('Error', e.message || 'Failed to start location sharing.');
+    }
   };
 
   const handleStopSharing = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setIsSharing(false);
+    stopSharing();
   };
 
-  const handleRecenter = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    fetchLocation();
-  };
 
-  const handleCompass = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    Alert.alert("Compass Recalibrated", "GPS direction aligned to North.");
-  };
-
-  const isDark = theme.isDark;
 
   if (loading) {
     return (
@@ -143,71 +115,18 @@ export const LocationScreen: React.FC = () => {
     >
       <View style={{ paddingBottom: 32 }}>
         
-        {/* High-Fidelity Map Simulator Card */}
-        <Card
-          variant="glass"
-          padding="none"
-          style={styles.mapCard}
-        >
-          {/* Concentric Safe Zone Outlines */}
-          <View style={[styles.safeZoneOuter, { borderColor: theme.colors.primary + '15', backgroundColor: theme.colors.primary + '05' }]}>
-            <View style={[styles.safeZoneInner, { borderColor: theme.colors.primary + '30', backgroundColor: theme.colors.primary + '08' }]}>
-              {/* Central User Marker Dot */}
-              <View style={[styles.userMarkerOutline, { backgroundColor: theme.colors.primary + '30' }]}>
-                <View style={[styles.userMarkerDot, { backgroundColor: theme.colors.primary }]} />
-              </View>
-            </View>
-          </View>
 
-          {/* Floating Map Overlays (Recenter & Compass) */}
-          <View style={styles.floatingControls}>
-            <TouchableOpacity 
-              onPress={handleRecenter}
-              style={[styles.floatingButton, { backgroundColor: isDark ? '#161B18' : '#FFFFFF', borderColor: theme.colors.border }]}
-              accessibilityLabel="Recenter map to your current location"
-              accessibilityRole="button"
-            >
-              <Icon name="location-pin" size={18} color={theme.colors.primary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress={handleCompass}
-              style={[styles.floatingButton, { backgroundColor: isDark ? '#161B18' : '#FFFFFF', borderColor: theme.colors.border }]}
-              accessibilityLabel="Align compass orientation"
-              accessibilityRole="button"
-            >
-              <Icon name="shield" size={18} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Top Overlay Badges */}
-          <View style={styles.mapBadgeRow}>
-            <Badge 
-              label={isSharing ? "LIVE BROADCAST" : "AMBIENT GPS"}
-              variant={isSharing ? "error" : "primary"}
-              size="small"
-            />
-            <Badge 
-              label={`Acc: ${location?.coords.accuracy?.toFixed(1) || '4.5'}m`} 
-              variant="primary" 
-              size="small" 
-            />
-          </View>
-          
-          {/* Bottom Overlay Label */}
-          <View style={styles.mapFooterLabel}>
-            <Icon name="shield" size={12} color={theme.colors.primary} containerStyle={{ marginRight: 6 }} />
-            <Typography variant="caption" weight="600" style={{ color: theme.colors.primaryDark }}>
-              Safe Zone: University Campus (Inside Radius)
-            </Typography>
-          </View>
-        </Card>
 
         {/* Location Details Card */}
         <Card variant="default" padding="large" style={{ marginBottom: 16 }}>
-          <Typography variant="h4" color="primary" style={{ marginBottom: 16 }}>
-            Current Coordinates
-          </Typography>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Typography variant="h4" color="primary">
+              Current Coordinates
+            </Typography>
+            {isSharing && (
+              <Badge label="Sharing Active" variant="success" size="small" />
+            )}
+          </View>
           
           <View style={{ marginBottom: 14 }}>
             <Typography variant="caption" color="muted">Approximate Address</Typography>
@@ -308,100 +227,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingVertical: 48,
-  },
-  mapCard: {
-    height: 280,
-    marginBottom: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  safeZoneOuter: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  safeZoneInner: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userMarkerOutline: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userMarkerDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  floatingControls: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    gap: 8,
-  },
-  floatingButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  mapBadgeRow: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  mapFooterLabel: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  statusBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    backgroundColor: '#E8F7EE',
-    padding: 12,
-    borderRadius: 12,
-    gap: 10,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
   },
   footerInfo: {
     flexDirection: 'row',

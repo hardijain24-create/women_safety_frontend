@@ -1,88 +1,92 @@
 import type { ColorTheme, SpacingTheme, TypographyTheme } from '../types';
 
 export const lightColors: ColorTheme = {
-  // Background colors - Calming safety white/gray background (Apple Health inspired)
-  background: '#F8FAF8',
-  backgroundSecondary: '#F3F4F6',
+  // Background colors - Warm cream/off-white background (Apple Health inspired)
+  background: '#FAF9F7',
+  backgroundSecondary: '#F3F2EE',
   card: '#FFFFFF',
-  cardGlass: 'rgba(255, 255, 255, 0.9)',
+  cardGlass: 'rgba(255, 255, 255, 0.95)',
   
   // Text colors - High contrast charcoal text
   textPrimary: '#1B1B1B',
-  textSecondary: '#6B7280',
-  textMuted: '#9CA3AF',
+  textSecondary: '#4B5563',
+  textTertiary: '#6B7280',
+  textMuted: '#A39E98',
   textInverse: '#FFFFFF',
   
-  // Accent colors - Calming green
-  primary: '#17C964',
-  primaryLight: '#5CE27F',
-  primaryDark: '#12A150',
-  secondary: '#5CE27F',
-  gold: '#17C964',       // Aliased to primary safety green to prevent import breakage
-  goldLight: '#5CE27F',  // Aliased to primary light green
-  goldDark: '#12A150',   // Aliased to primary dark green
+  // Accent colors - Calm warm elements
+  primary: '#2D7B57',    // Desaturated green for safety status
+  primaryLight: '#EEF6F2',
+  primaryDark: '#20583E',
+  secondary: '#95A59E',
+  gold: '#2D7B57',
+  goldLight: '#EEF6F2',
+  goldDark: '#20583E',
   
-  // Navy colors - Aliased to keep compatibilities
+  // Navy colors
   navy: '#1B1B1B',
-  navyLight: '#6B7280',
+  navyLight: '#45413D',
   navyDark: '#0F0F0F',
   
-  // Status colors - Calming safety/health color mappings
-  success: '#2ECC71',
-  warning: '#F5B942',
-  error: '#FF4D5A',      // High-intensity emergency red
-  info: '#6B7280',
+  // Status colors - Confident emergency coral & safety green
+  success: '#2D7B57',    // Desaturated green
+  warning: '#E3BAA0',
+  error: '#E48981',      // Warm coral/salmon for SOS/danger
+  errorDark: '#BE716A',  // Deeper coral for borders/active-states
+  info: '#45413D',
   neutral: '#E5E7EB',
-  muted: '#9CA3AF',
+  muted: '#A39E98',
   
   // UI colors
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  shadow: 'rgba(23, 201, 100, 0.08)',
-  overlay: 'rgba(0, 0, 0, 0.4)',
+  border: '#EBE6DF',
+  borderLight: '#F5F0E8',
+  shadow: 'rgba(92, 88, 84, 0.05)',
+  overlay: 'rgba(0, 0, 0, 0.3)',
   blurTint: 'light',
 };
 
 export const darkColors: ColorTheme = {
-  // Background colors - Deep dark safety forest-black background
-  background: '#0E110F',
-  backgroundSecondary: '#161B18',
-  card: '#161B18',
-  cardGlass: 'rgba(22, 27, 24, 0.9)',
+  // Background colors - Warm dark charcoal
+  background: '#1A1816',
+  backgroundSecondary: '#252220',
+  card: '#252220',
+  cardGlass: 'rgba(37, 34, 32, 0.95)',
   
   // Text colors
   textPrimary: '#F5F5F5',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B7280',
-  textInverse: '#0E110F',
+  textSecondary: '#D8E0DC',
+  textTertiary: '#B8C2BC',
+  textMuted: '#5C5854',
+  textInverse: '#1A1816',
   
   // Accent colors
-  primary: '#17C964',
-  primaryLight: '#5CE27F',
-  primaryDark: '#12A150',
-  secondary: '#5CE27F',
-  gold: '#17C964',       // Aliased
-  goldLight: '#5CE27F',  // Aliased
-  goldDark: '#12A150',   // Aliased
+  primary: '#278258',
+  primaryLight: '#263B30',
+  primaryDark: '#195F40',
+  secondary: '#91AEA0',
+  gold: '#278258',
+  goldLight: '#263B30',
+  goldDark: '#195F40',
   
-  // Navy colors - Aliased
+  // Navy colors
   navy: '#F5F5F5',
-  navyLight: '#9CA3AF',
-  navyDark: '#161B18',
+  navyLight: '#E1DDD7',
+  navyDark: '#1A1816',
   
   // Status colors
-  success: '#2ECC71',
-  warning: '#E09A24',
-  error: '#FF4D5A',
-  info: '#9CA3AF',
+  success: '#278258',
+  warning: '#E5B597',
+  error: '#E78279',
+  errorDark: '#C16860',
+  info: '#A39E98',
   neutral: '#2D3748',
-  muted: '#6B7280',
+  muted: '#5C5854',
   
   // UI colors
-  border: '#2D3748',
-  borderLight: '#1F2937',
-  shadow: 'rgba(0, 0, 0, 0.4)',
-  overlay: 'rgba(0, 0, 0, 0.75)',
+  border: '#36322F',
+  borderLight: '#2A2724',
+  shadow: 'rgba(0, 0, 0, 0.3)',
+  overlay: 'rgba(0, 0, 0, 0.6)',
   blurTint: 'dark',
 };
 
@@ -103,8 +107,8 @@ export const typography: TypographyTheme = {
   sizeLg: 18,
   sizeXl: 20,
   size2xl: 24,
-  size3xl: 30,
-  size4xl: 36,
+  size3xl: 28,
+  size4xl: 34,
 };
 
 // For touch targets suitable for all ages
@@ -118,10 +122,10 @@ export const touchTargets = {
 export const borderRadius = {
   xs: 6,
   sm: 12,
-  md: 16,
-  lg: 20,
-  xl: 28,
-  '2xl': 36,
+  md: 18,
+  lg: 18,
+  xl: 20,
+  '2xl': 24,
   full: 9999,
 };
 
@@ -152,23 +156,23 @@ export const elevation = {
   sm: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   md: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   lg: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
 };
 
@@ -211,7 +215,7 @@ export const avatarSizes = {
 
 export const card = {
   minHeight: 88,
-  radius: 20,
+  radius: 18,
   padding: 20,
   gap: 16,
 };
@@ -231,27 +235,27 @@ export const blur = {
 };
 
 export const lightGradients = {
-  primary: ['#17C964', '#5CE27F'],
-  danger: ['#FF4D5A', '#FF7B85'],
-  card: ['#FFFFFF', '#F8FAF8'],
+  primary: ['#88B29E', '#A5C7B4'],
+  danger: ['#EE8B83', '#C9625A'],
+  card: ['#FFFFFF', '#FBF9F6'],
 };
 
 export const darkGradients = {
-  primary: ['#17C964', '#5CE27F'],
-  danger: ['#FF4D5A', '#FF7B85'],
-  card: ['#161B18', '#0E110F'],
+  primary: ['#88B29E', '#A5C7B4'],
+  danger: ['#EE8B83', '#C9625A'],
+  card: ['#221E1C', '#161413'],
 };
 
 export const status = {
-  connected: '#17C964',
-  connecting: '#F5B942',
+  connected: '#88B29E',
+  connecting: '#EAA87E',
   offline: '#9CA3AF',
-  danger: '#FF4D5A',
+  danger: '#EE8B83',
 };
 
 export const layout = {
   screenPadding: 20,
-  sectionGap: 24,
+  sectionGap: 20,
   cardGap: 16,
   fabBottom: 32,
 };
@@ -260,5 +264,10 @@ export const hero = {
   sosButton: 180,
   profile: 96,
   header: 140,
+};
+
+export const fontFamily = {
+  heading: 'Manrope-Medium',
+  body: 'Manrope-Regular',
 };
 

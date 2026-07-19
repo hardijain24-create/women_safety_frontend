@@ -29,17 +29,39 @@ apiClient.interceptors.request.use(
   }
 );
 
+type UnauthorizedListener = () => void;
+const listeners: Set<UnauthorizedListener> = new Set();
+
+export const authEmitter = {
+  subscribe(listener: UnauthorizedListener): () => void {
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  },
+  emitUnauthorized() {
+    listeners.forEach((listener) => {
+      try {
+        listener();
+      } catch (err) {
+        console.error('Error executing unauthorized listener:', err);
+      }
+    });
+  },
+};
+
 // Response interceptor to handle common errors
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     // We can handle 401 Unauthorized here (e.g., logout user)
-    if (error.response?.status === 401) {
+    const hasAuthHeader = error.config?.headers?.Authorization || error.config?.headers?.authorization;
+    if (error.response?.status === 401 && hasAuthHeader) {
       console.log('Unauthorized - possible token expiration. Clearing token.');
       await AsyncStorage.removeItem('userToken');
-      // The app will likely redirect to login on the next protected action
-      // or via AuthContext state change if we had a dedicated listener
+      authEmitter.emitUnauthorized();
     }
     return Promise.reject(error);
   }
 );
+

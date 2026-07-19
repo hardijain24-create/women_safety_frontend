@@ -11,7 +11,6 @@ interface EmergencyDashboardProps {
   countdown?: number;
   activeTime?: number;
   location?: Location.LocationObject | null;
-  recordingSegment?: number;
   isHoldingCancel: boolean;
   cancelProgress: number;
   onHoldStart: () => void;
@@ -25,7 +24,6 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   countdown = 5,
   activeTime = 0,
   location,
-  recordingSegment = 1,
   isHoldingCancel,
   cancelProgress,
   onHoldStart,
@@ -180,12 +178,7 @@ export const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
             {location?.coords.latitude.toFixed(4) || '37.7749'}° N, {location?.coords.longitude.toFixed(4) || '-122.4194'}° W
           </Typography>
         </View>
-        <View style={[styles.telemetryRow, { marginTop: theme.spacing.sm }]}>
-          <Typography variant="bodySmall" color="inverse" weight="600">✓ Audio Recording</Typography>
-          <Typography variant="caption" color="inverse" style={{ opacity: 0.8 }}>
-            segment_{recordingSegment}.wav
-          </Typography>
-        </View>
+
         <View style={[styles.telemetryRow, { marginTop: theme.spacing.sm }]}>
           <Typography variant="bodySmall" color="inverse" weight="600">✓ Emergency Call</Typography>
           <Typography variant="caption" color="inverse" style={{ opacity: 0.8 }}>

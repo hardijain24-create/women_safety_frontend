@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Linking, Alert, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme';
 import { Icon } from '../atoms/Icon';
 import { Avatar } from '../atoms/Avatar';
@@ -7,6 +7,7 @@ import { Typography } from '../atoms/Typography';
 import { Badge } from '../atoms/Badge';
 import { Card } from './Card';
 import type { EmergencyContact } from '../../types';
+import { showAlert } from '../../utils/alert';
 
 interface ContactCardProps {
   contact: EmergencyContact;
@@ -26,7 +27,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
   const handleCall = () => {
     if (contact.phone) {
       Linking.openURL(`tel:${contact.phone}`).catch(() => {
-        Alert.alert('Error', 'Unable to initiate call.');
+        showAlert('Error', 'Unable to initiate call.');
       });
     }
   };
@@ -34,25 +35,30 @@ export const ContactCard: React.FC<ContactCardProps> = ({
   const handleSms = () => {
     if (contact.phone) {
       Linking.openURL(`sms:${contact.phone}`).catch(() => {
-        Alert.alert('Error', 'Unable to open messaging app.');
+        showAlert('Error', 'Unable to open messaging app.');
       });
     }
   };
-
-  const isDark = theme.isDark;
 
   return (
     <Card 
       variant={onPress ? "interactive" : "default"} 
       padding="medium"
       onPress={onPress}
-      style={{ marginBottom: theme.layout.cardGap }}
+      style={{ 
+        marginBottom: theme.layout.cardGap,
+        ...(contact.isPrimary ? {
+          borderLeftWidth: 4,
+          borderLeftColor: theme.colors.primary,
+        } : {})
+      }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         {/* Avatar Component */}
         <Avatar 
           name={contact.name} 
           size="md" 
+          borderColor={contact.isPrimary ? theme.colors.primary : undefined}
           style={{ marginRight: theme.layout.cardGap }} 
         />
 
@@ -97,7 +103,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
             <>
               <TouchableOpacity 
                 onPress={handleCall} 
-                style={[styles.actionButton, { backgroundColor: isDark ? '#161B18' : '#F3F4F6' }]}
+                style={[styles.actionButton, { backgroundColor: theme.colors.backgroundSecondary }]}
                 accessibilityLabel={`Call ${contact.name}`}
                 accessibilityRole="button"
               >
@@ -106,7 +112,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
               
               <TouchableOpacity 
                 onPress={handleSms} 
-                style={[styles.actionButton, { backgroundColor: isDark ? '#161B18' : '#F3F4F6' }]}
+                style={[styles.actionButton, { backgroundColor: theme.colors.backgroundSecondary }]}
                 accessibilityLabel={`Send message to ${contact.name}`}
                 accessibilityRole="button"
               >
