@@ -159,8 +159,49 @@ export const HomeScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Location & Guardians Card */}
-        <Card variant="glass" padding="medium" style={styles.locationCard}>
+        {/* Large SOS Action Button moved up */}
+        <View style={[styles.sosContainer, { marginVertical: theme.layout.sectionGap }]}>
+          <HeroSOSButton onPress={handleSOSPress} />
+        </View>
+
+        {/* Floating Quick Action Row */}
+        <View style={[styles.actionsRow, { maxWidth: 420, width: '100%' }]}>
+          <TouchableOpacity
+            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
+            onPress={handleShareLocation}
+            activeOpacity={0.8}
+          >
+            <Icon name="location-pin" size={20} color={isSharing ? theme.colors.error : theme.colors.primary} />
+            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
+              {isSharing ? 'Stop Share' : 'Share GPS'}
+            </Typography>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
+            onPress={handleImSafe}
+            activeOpacity={0.8}
+          >
+            <Icon name="check" size={20} color={theme.colors.success} />
+            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
+              I'm Safe
+            </Typography>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
+            onPress={() => navigation.navigate(ROUTES.CONTACTS)}
+            activeOpacity={0.8}
+          >
+            <Icon name="contacts" size={20} color={theme.colors.primary} />
+            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
+              Guardians
+            </Typography>
+          </TouchableOpacity>
+        </View>
+
+        {/* Location & Guardians Card moved to the bottom */}
+        <Card variant="glass" padding="medium" style={[styles.locationCard, { marginTop: theme.layout.sectionGap }]}>
           <View style={styles.locationCardHeader}>
             <Icon name="location-pin" size={24} color={theme.colors.primary} />
             <Typography variant="body" color="primary" weight="600" style={{ marginLeft: 8 }}>
@@ -210,47 +251,6 @@ export const HomeScreen: React.FC = () => {
             )}
           </View>
         </Card>
-
-        {/* Floating Quick Action Row */}
-        <View style={[styles.actionsRow, { marginTop: 16, maxWidth: 420, width: '100%' }]}>
-          <TouchableOpacity
-            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
-            onPress={handleShareLocation}
-            activeOpacity={0.8}
-          >
-            <Icon name="location-pin" size={20} color={isSharing ? theme.colors.error : theme.colors.primary} />
-            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
-              {isSharing ? 'Stop Share' : 'Share GPS'}
-            </Typography>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
-            onPress={handleImSafe}
-            activeOpacity={0.8}
-          >
-            <Icon name="check" size={20} color={theme.colors.success} />
-            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
-              I'm Safe
-            </Typography>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
-            onPress={() => navigation.navigate(ROUTES.CONTACTS)}
-            activeOpacity={0.8}
-          >
-            <Icon name="contacts" size={20} color={theme.colors.primary} />
-            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
-              Guardians
-            </Typography>
-          </TouchableOpacity>
-        </View>
-
-        {/* Large SOS Action Button inside normal block layout flow */}
-        <View style={[styles.sosContainer, { marginTop: theme.layout.sectionGap }]}>
-          <HeroSOSButton onPress={handleSOSPress} />
-        </View>
       </ScrollView>
     </View>
   );
