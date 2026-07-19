@@ -198,7 +198,7 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {/* Location & Guardians Card moved to the bottom */}
-        <Card variant="glass" padding="medium" style={[styles.locationCard, { marginTop: theme.layout.sectionGap }]}>
+        <Card variant="glass" padding="medium" style={[styles.locationCard, { marginTop: 32 }]}>
           <View style={styles.locationCardHeader}>
             <Icon name="location-pin" size={24} color={theme.colors.primary} />
             <Typography variant="body" color="primary" weight="600" style={{ marginLeft: 8 }}>
