@@ -109,7 +109,7 @@ export const BandScreen: React.FC = () => {
           </View>
 
           <Typography variant="h3" color="primary" weight="600" style={{ marginTop: 16 }}>
-            {!isAvailable ? 'Bluetooth Unavailable' : isConnected ? 'Guardian Band Connected' : isScanning ? 'Scanning for band...' : 'Unpaired'}
+            {!isAvailable ? 'Bluetooth Unavailable' : isConnected ? 'Guardian Band Connected' : isScanning ? 'Scanning for band...' : 'Band not connected'}
           </Typography>
           <Typography variant="caption" color="muted" style={{ marginTop: 4, marginBottom: 20, textAlign: 'center' }}>
             {!isAvailable

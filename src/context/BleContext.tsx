@@ -82,6 +82,17 @@ export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const connect = async (id: string): Promise<boolean> => {
     setIsScanning(false);
     BleService.stopScan();
+
+    if (id === 'esp32-safety-band-v2') {
+      const dev = { id, name: 'Guardian Band (Mock)' };
+      setConnectedDevice(dev);
+      setIsConnected(true);
+      setBatteryLevel(95);
+      setSignalStrength(-60);
+      setFirmwareVersion('v2.1.0 (Mock)');
+      return true;
+    }
+
     const success = await BleService.connectToDevice(id);
     if (success) {
       const dev = scannedDevices.find((d) => d.id === id) || { id, name: 'Guardian Band Wearable' };
