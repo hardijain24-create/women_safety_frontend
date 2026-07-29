@@ -11,7 +11,7 @@ import { PermissionCard } from '../../components/molecules/PermissionCard';
 import { AuthContext } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import BleService from '../../services/BleService';
-import { authApi } from '../../api/services';
+import { userApi } from '../../api/services';
 import { showAlert } from '../../utils/alert';
 
 export const ProfileScreen: React.FC = () => {
@@ -39,7 +39,7 @@ export const ProfileScreen: React.FC = () => {
     }
     setIsSavingPin(true);
     try {
-      const res = await authApi.updateProfile({ safety_pin: pin });
+      const res = await userApi.updateProfile({ safety_pin: pin });
       if (res.success && res.data) {
         updateUser(res.data);
         showAlert('Success', 'Safety PIN updated successfully!');

@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('[AuthContext] Fetch profile response:', response);
       if (response.success && response.data) {
         setUser(response.data);
+        await AsyncStorage.setItem('userData', JSON.stringify(response.data));
         console.log('[AuthContext] User state successfully set:', response.data);
       }
     } catch (e) {
@@ -60,7 +61,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const token = response.data.access_token || response.data.token;
         console.log('[AuthContext] Login success, token extracted. Setting state and AsyncStorage...');
         setUserToken(token);
+        setUser(response.data.user);
         await AsyncStorage.setItem('userToken', token);
+        if (response.data.user) {
+          await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        }
         await fetchUser();
       } else {
         console.error('[AuthContext] Login API returned success=false:', response);
@@ -88,6 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.success && response.data) {
         const token = response.data.access_token || response.data.token;
         await AsyncStorage.setItem('userToken', token);
+        if (response.data.user) {
+          setUser(response.data.user);
+          await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        }
         
         if (guardian && guardian.name && guardian.phone) {
           try {
@@ -128,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserToken(null);
       setUser(null);
       await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userData');
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +151,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       let token = await AsyncStorage.getItem('userToken');
+      let savedUser = await AsyncStorage.getItem('userData');
+      
       setUserToken(token);
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error("Failed to parse saved user data", e);
+        }
+      }
+      
       if (token) {
         await fetchUser();
       }

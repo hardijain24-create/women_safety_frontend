@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import BleService from '../services/BleService';
 import type { DeviceLike } from '../services/BleService.types';
+import { userApi } from '../api/services';
+import { AuthContext } from './AuthContext';
+import { AlertTriggerService } from '../services/AlertTriggerService';
 
 export interface BleContextType {
   isConnected: boolean;
@@ -22,6 +25,8 @@ export interface BleContextType {
 export const BleContext = createContext<BleContextType | undefined>(undefined);
 
 export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user || null;
   const [isAvailable] = useState(() => BleService.isAvailable());
   const [isConnected, setIsConnected] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -55,6 +60,13 @@ export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, []);
 
+  useEffect(() => {
+    BleService.setOnSosTriggered(() => {
+      console.log('[BleContext] Hardware SOS button triggered!');
+      AlertTriggerService.triggerSOS(user);
+    });
+  }, [user]);
+
   const scanForDevices = async () => {
     if (!isAvailable) {
       throw new Error('Bluetooth is unavailable on this device.');
@@ -83,21 +95,18 @@ export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsScanning(false);
     BleService.stopScan();
 
-    if (id === 'esp32-safety-band-v2') {
-      const dev = { id, name: 'Guardian Band (Mock)' };
-      setConnectedDevice(dev);
-      setIsConnected(true);
-      setBatteryLevel(95);
-      setSignalStrength(-60);
-      setFirmwareVersion('v2.1.0 (Mock)');
-      return true;
-    }
-
     const success = await BleService.connectToDevice(id);
     if (success) {
       const dev = scannedDevices.find((d) => d.id === id) || { id, name: 'Guardian Band Wearable' };
       setConnectedDevice(dev);
       setIsConnected(true);
+
+      try {
+        await userApi.pairDevice({ device_id: id });
+        console.log('[BleContext] Successfully registered paired device with backend');
+      } catch (err) {
+        console.error('[BleContext] Failed to register paired device with backend:', err);
+      }
     }
     return success;
   };

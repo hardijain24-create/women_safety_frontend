@@ -13,7 +13,12 @@ class SmsSenderModule : Module() {
     AsyncFunction("sendDirectSMS") { phoneNumber: String, message: String ->
       try {
         val smsManager = android.telephony.SmsManager.getDefault()
-        smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+        val parts = smsManager.divideMessage(message)
+        if (parts.size > 1) {
+            smsManager.sendMultipartTextMessage(phoneNumber, null, parts, null, null)
+        } else {
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+        }
         true
       } catch (e: Exception) {
         throw Exception("Failed to send SMS: " + e.message)

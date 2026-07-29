@@ -5,13 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { alertApi } from '../api/services';
 import { showAlert } from '../utils/alert';
 
-// @ts-ignore
-let SmsSender: any = null;
-try {
-  SmsSender = require('../../modules/sms-sender').SmsSender;
-} catch (e) {
-  console.warn('[AlertTriggerService] Native SmsSender module unavailable. Using backend fallback.');
-}
+import { SmsSender } from '../../modules/sms-sender';
 
 type User = {
   id: string;

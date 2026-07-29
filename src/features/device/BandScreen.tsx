@@ -45,13 +45,6 @@ export const BandScreen: React.FC = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     try {
       await scanForDevices();
-      // Auto-connect to first scanned device for testing/mock simplicity if found
-      if (scannedDevices.length > 0) {
-        await connect(scannedDevices[0].id);
-      } else {
-        // Fallback pair with mock device
-        await connect('esp32-safety-band-v2');
-      }
     } catch (e: any) {
       showAlert('Connection Failed', e.message || 'Bluetooth initialization failed.');
     }
@@ -120,14 +113,42 @@ export const BandScreen: React.FC = () => {
           </Typography>
 
           {!isConnected ? (
-            <Button
-              title={isScanning ? 'Scanning...' : 'Pair Guardian Band'}
-              onPress={handlePair}
-              variant="primary"
-              size="medium"
-              loading={isScanning}
-              disabled={!isAvailable}
-            />
+            <View style={{ width: '100%' }}>
+              <Button
+                title={isScanning ? 'Scanning...' : 'Pair Guardian Band'}
+                onPress={handlePair}
+                variant="primary"
+                size="medium"
+                loading={isScanning && scannedDevices.length === 0}
+                disabled={!isAvailable || isScanning}
+                fullWidth
+              />
+              
+              {(isScanning || scannedDevices.length > 0) && (
+                <View style={{ marginTop: 20, width: '100%' }}>
+                  <Typography variant="caption" color="muted" style={{ marginBottom: 12, textAlign: 'center' }}>
+                    {scannedDevices.length > 0 ? 'Select a device to connect:' : 'Looking for nearby bands...'}
+                  </Typography>
+                  {scannedDevices.map((device) => (
+                    <Button
+                      key={device.id}
+                      title={device.name || device.id}
+                      onPress={async () => {
+                        try {
+                          await connect(device.id);
+                        } catch (e: any) {
+                          showAlert('Connection Failed', e.message || 'Failed to connect to device.');
+                        }
+                      }}
+                      variant="secondary"
+                      size="medium"
+                      style={{ marginBottom: 8 }}
+                      fullWidth
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
           ) : (
             <Button title="Unpair Device" onPress={handleDisconnect} variant="outline" size="medium" />
           )}

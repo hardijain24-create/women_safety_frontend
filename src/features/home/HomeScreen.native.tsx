@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../theme';
-import { Typography, Icon, Avatar, ProgressRing, Divider } from '../../components/atoms';
+import { Typography, Icon, Avatar, Divider } from '../../components/atoms';
 import { Card, HeroSOSButton } from '../../components/molecules';
 import { useBle } from '../../context/BleContext';
 import { alertApi } from '../../api/services';
@@ -198,7 +198,7 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {/* Location & Guardians Card moved to the bottom */}
-        <Card variant="glass" padding="medium" style={[styles.locationCard, { marginTop: 32 }]}>
+        <Card variant="glass" padding="medium" style={{ ...styles.locationCard, marginTop: 32 }}>
           <View style={styles.locationCardHeader}>
             <Icon name="location-pin" size={24} color={theme.colors.primary} />
             <Typography variant="body" color="primary" weight="600" style={{ marginLeft: 8 }}>

@@ -192,12 +192,27 @@ export const Button: React.FC<ButtonProps> = ({
     };
   };
 
-  const getTextStyle = (): TextStyle => ({
-    color: textColors[variant],
-    fontSize: resolvedSizeProps.fontSize,
-    fontWeight: resolvedSizeProps.fontWeight,
-    ...textStyle,
-  });
+  const getTextStyle = (): TextStyle => {
+    let color = textColors[variant];
+    
+    // Fix contrast for secondary variant (light background)
+    if (variant === 'secondary') {
+      color = theme.colors.primary;
+    }
+    
+    // Fix contrast for disabled/loading solid buttons
+    const isSolid = ['primary', 'secondary', 'danger'].includes(variant);
+    if ((disabled || loading) && isSolid) {
+      color = theme.colors.textSecondary;
+    }
+
+    return {
+      color,
+      fontSize: resolvedSizeProps.fontSize,
+      fontWeight: resolvedSizeProps.fontWeight,
+      ...textStyle,
+    };
+  };
 
   const handlePress = async () => {
     const hapticStyle =
