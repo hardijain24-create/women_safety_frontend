@@ -23,6 +23,9 @@
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.BLUETOOTH_SCAN",
         "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.SEND_SMS",
         "android.permission.READ_PHONE_STATE"
       ]
@@ -37,8 +40,21 @@
       ],
       "react-native-ble-plx",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Guardian Band needs your location in the background to share live coordinates with your emergency contacts for up to 1 hour.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
     ],
-    "extra": {}
+    "extra": {
+      "eas": {
+        "projectId": "c0f2e02e-a8be-4cfc-b6d8-3eb618cb25ab"
+      }
+    }
   }
 }

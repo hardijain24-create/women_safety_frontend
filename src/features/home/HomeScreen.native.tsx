@@ -20,11 +20,11 @@ export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const { vibrationEnabled } = useSettings();
+  const { vibrationEnabled, fakeCallerName, fakeCallDelay } = useSettings();
 
   const { user } = useContext(AuthContext);
   const { isConnected, batteryLevel } = useBle();
-  const { address, fetchLocation, shareLocation, isSharing, stopSharing } = useLocation();
+  const { address, fetchLocation, shareLocation, isSharing, stopSharing, remainingMinutes } = useLocation();
 
   const emergencyContacts = (user?.emergency_contacts || []) as Array<{ name: string; phone: string }>;
 
@@ -42,11 +42,11 @@ export const HomeScreen: React.FC = () => {
     }
     try {
       if (isSharing) {
-        stopSharing();
-        showAlert('Sharing Ended', 'Live coordinate broadcast has been deactivated.');
+        await stopSharing();
+        showAlert('Live Sharing Stopped', 'Background location tracking has been deactivated.');
       } else {
         await shareLocation(user.id);
-        showAlert('Coordinates Shared', 'Live coordinates link broadcasted to primary guardians.');
+        showAlert('Live Sharing Started', 'Your live location will be shared with emergency contacts for 1 hour. You can lock your phone.');
       }
     } catch (e: any) {
       showAlert('Error', e.message || 'Failed to trigger location share.');
@@ -161,16 +161,16 @@ export const HomeScreen: React.FC = () => {
           <HeroSOSButton onPress={handleSOSPress} />
         </View>
 
-        {/* Floating Quick Action Row */}
-        <View style={[styles.actionsRow, { maxWidth: 420, width: '100%' }]}>
+        {/* Floating Quick Action Row 1 */}
+        <View style={[styles.actionsRow, { maxWidth: 420, width: '100%', marginBottom: 12 }]}>
           <TouchableOpacity
             style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
             onPress={handleShareLocation}
             activeOpacity={0.8}
           >
             <Icon name="location-pin" size={20} color={isSharing ? theme.colors.error : theme.colors.primary} />
-            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
-              {isSharing ? 'Stop Share' : 'Share GPS'}
+            <Typography variant="caption" color={isSharing ? 'error' : 'secondary'} weight="500" style={{ marginTop: 4 }}>
+              {isSharing ? `Live • ${remainingMinutes}m` : 'Live Share'}
             </Typography>
           </TouchableOpacity>
 
@@ -184,15 +184,38 @@ export const HomeScreen: React.FC = () => {
               I'm Safe
             </Typography>
           </TouchableOpacity>
+        </View>
 
+        {/* Floating Quick Action Row 2 */}
+        <View style={[styles.actionsRow, { maxWidth: 420, width: '100%' }]}>
           <TouchableOpacity
             style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
             onPress={() => navigation.navigate(ROUTES.CONTACTS)}
             activeOpacity={0.8}
           >
-            <Icon name="contacts" size={20} color={theme.colors.primary} />
+            <Icon name="users" size={20} color={theme.colors.primary} />
             <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
               Guardians
+            </Typography>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.glassActionBtn, { backgroundColor: theme.colors.cardGlass }]}
+            onPress={async () => {
+              if (vibrationEnabled) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              }
+              const FakeCallService = require('../../services/FakeCallService').default;
+              const success = await FakeCallService.scheduleFakeCall(fakeCallDelay, fakeCallerName);
+              if (success) {
+                showAlert('Fake Call Scheduled', `Your phone will ring in ${fakeCallDelay} seconds. You can lock your screen now.`);
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <Icon name="phone" size={20} color={theme.colors.primary} />
+            <Typography variant="caption" color="secondary" weight="500" style={{ marginTop: 4 }}>
+              Fake Call
             </Typography>
           </TouchableOpacity>
         </View>

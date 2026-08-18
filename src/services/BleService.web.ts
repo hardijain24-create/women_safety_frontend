@@ -46,7 +46,7 @@ class BleService implements IBleService {
     console.warn('[BLE] monitorSOS() called on Web: Bluetooth is unsupported on the web version.');
   }
 
-  setOnSosTriggered(_callback: () => void): void {
+  setOnSosTriggered(_callback: (() => void) | null): void {
     console.warn('[BLE] setOnSosTriggered() called on Web: Bluetooth is unsupported on the web version.');
   }
 

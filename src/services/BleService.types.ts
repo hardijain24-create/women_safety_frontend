@@ -15,7 +15,7 @@ export interface IBleService {
   connectToDevice(deviceId: string): Promise<boolean>;
   disconnect(): Promise<void>;
   monitorSOS(device: DeviceLike): void;
-  setOnSosTriggered(callback: () => void): void;
+  setOnSosTriggered(callback: (() => void) | null): void;
   isConnected(): boolean;
   testVibration(): Promise<void>;
   testAlarm(): Promise<void>;

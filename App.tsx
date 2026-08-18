@@ -19,6 +19,9 @@ import { BleProvider } from './src/context/BleContext';
 import { SettingsProvider } from './src/context/SettingsContext';
 import { GlobalAlert } from './src/utils/alert';
 
+// Register background tasks at module scope (must be imported before any component renders)
+import './src/services/LocationTaskManager';
+
 export default function App(): JSX.Element {
   const [fontsLoaded] = useFonts({
     'Manrope-Light': Manrope_300Light,

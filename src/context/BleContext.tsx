@@ -65,6 +65,9 @@ export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('[BleContext] Hardware SOS button triggered!');
       AlertTriggerService.triggerSOS(user);
     });
+    return () => {
+      BleService.setOnSosTriggered(null);
+    };
   }, [user]);
 
   const scanForDevices = async () => {
@@ -112,12 +115,17 @@ export const BleProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const disconnect = async () => {
-    await BleService.disconnect();
-    setConnectedDevice(null);
-    setIsConnected(false);
-    setBatteryLevel(null);
-    setSignalStrength(null);
-    setFirmwareVersion(null);
+    try {
+      await BleService.disconnect();
+    } catch (err) {
+      console.error('[BleContext] Disconnect error:', err);
+    } finally {
+      setConnectedDevice(null);
+      setIsConnected(false);
+      setBatteryLevel(null);
+      setSignalStrength(null);
+      setFirmwareVersion(null);
+    }
   };
 
   const testVibration = async () => {

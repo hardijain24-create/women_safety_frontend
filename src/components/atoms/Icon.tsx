@@ -39,7 +39,12 @@ import {
   EyeOff, 
   MessageSquare, 
   Search,
-  HelpCircle
+  HelpCircle,
+  Clock,
+  PhoneOff,
+  MicOff,
+  Grid3X3,
+  Video
 } from 'lucide-react-native';
 
 interface IconProps {
@@ -91,6 +96,13 @@ const lucideMap: Record<string, React.ComponentType<any>> = {
   'eye-off': EyeOff,
   'message': MessageSquare,
   'search': Search,
+  'clock': Clock,
+  'phone-off': PhoneOff,
+  'mic-off': MicOff,
+  'grid': Grid3X3,
+  'video': Video,
+  'users': Users,
+  'phone-call': Phone,
 };
 
 export const Icon: React.FC<IconProps> = ({

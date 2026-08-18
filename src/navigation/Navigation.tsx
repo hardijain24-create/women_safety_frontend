@@ -7,6 +7,8 @@ import { Icon } from '../components/atoms/Icon';
 import { ROUTES } from '../constants';
 import { AuthContext } from '../context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { createNavigationContainerRef } from '@react-navigation/native';
 
 // Auth Screens
 import { LoginScreen } from '../features/auth/LoginScreen';
@@ -21,9 +23,8 @@ import { ContactsScreen } from '../features/contacts/ContactsScreen';
 import { AlertsScreen } from '../features/alerts/AlertsScreen';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { SOSScreen } from '../features/sos/SOSScreen';
-
-
-
+import { FakeCallIncomingScreen } from '../features/fakecall/FakeCallIncomingScreen';
+import { FakeCallActiveScreen } from '../features/fakecall/FakeCallActiveScreen';
 // Types
 export type AuthStackParamList = {
   [ROUTES.LOGIN]: undefined;
@@ -43,6 +44,8 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   [ROUTES.SOS]: undefined;
+  [ROUTES.FAKE_CALL_INCOMING]: undefined;
+  [ROUTES.FAKE_CALL_ACTIVE]: undefined;
 };
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -209,9 +212,38 @@ const MainTabNavigator: React.FC = () => {
   );
 };
 
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
 export const Navigation: React.FC = () => {
   const { theme } = useTheme();
   const { userToken, isLoading } = useContext(AuthContext);
+
+  React.useEffect(() => {
+    let subscription: any;
+    try {
+      if (Notifications && typeof Notifications.addNotificationResponseReceivedListener === 'function') {
+        subscription = Notifications.addNotificationResponseReceivedListener(response => {
+          const data = response.notification.request.content.data;
+          const body = response.notification.request.content.body || '';
+          // Extract caller name roughly
+          const callerName = body.replace('📱 ', '').replace(' is calling', '') || 'Unknown';
+          
+          if (data?.type === 'fake_call') {
+            if (navigationRef.isReady()) {
+              (navigationRef as any).navigate(ROUTES.FAKE_CALL_INCOMING, { callerName });
+            }
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('[Navigation] Notification listener skipped:', err);
+    }
+    return () => {
+      if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove();
+      }
+    };
+  }, []);
 
   const navigationTheme = {
     ...(theme.isDark ? DarkTheme : DefaultTheme),
@@ -235,7 +267,7 @@ export const Navigation: React.FC = () => {
   }
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer theme={navigationTheme} ref={navigationRef}>
       <RootStack.Navigator screenOptions={{ headerShown: false, ...transitionOptions }}>
         {userToken == null ? (
           <RootStack.Screen name="Auth" component={AuthStackNavigator} />
@@ -245,6 +277,16 @@ export const Navigation: React.FC = () => {
             <RootStack.Screen 
               name={ROUTES.SOS} 
               component={SOSScreen}
+              options={{ presentation: 'modal' }}
+            />
+            <RootStack.Screen 
+              name={ROUTES.FAKE_CALL_INCOMING} 
+              component={FakeCallIncomingScreen}
+              options={{ presentation: 'modal' }}
+            />
+            <RootStack.Screen 
+              name={ROUTES.FAKE_CALL_ACTIVE} 
+              component={FakeCallActiveScreen}
               options={{ presentation: 'modal' }}
             />
           </>

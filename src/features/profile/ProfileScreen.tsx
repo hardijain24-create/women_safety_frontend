@@ -21,9 +21,13 @@ export const ProfileScreen: React.FC = () => {
     vibrationEnabled,
     alarmEnabled,
     autoConnect,
+    fakeCallerName,
+    fakeCallDelay,
     setVibrationEnabled,
     setAlarmEnabled,
     setAutoConnect,
+    setFakeCallerName,
+    setFakeCallDelay,
   } = useSettings();
 
   const [gpsPermission, setGpsPermission] = useState<'granted' | 'denied' | 'requesting'>('requesting');
@@ -137,6 +141,33 @@ export const ProfileScreen: React.FC = () => {
           <SettingsRow label="Auto Connect Wearable" description="Background device auto pairing" icon="band" rightComponent={<Toggle value={autoConnect} onValueChange={setAutoConnect} size="large" />} />
           <SettingsRow label="Haptic Feedback Click" description="Vibrate on safety actions" icon="vibrate" rightComponent={<Toggle value={vibrationEnabled} onValueChange={setVibrationEnabled} size="large" />} />
           <SettingsRow label="Acoustic Emergency Siren" description="Sound siren alarm during SOS" icon="volume" noBorder rightComponent={<Toggle value={alarmEnabled} onValueChange={setAlarmEnabled} size="large" />} />
+        </SettingsSection>
+
+        <SettingsSection title="Fake Call Decoy">
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+            <Typography variant="label" color="secondary" weight="500" style={{ marginBottom: 8 }}>
+              Fake Caller Name
+            </Typography>
+            <Input
+              value={fakeCallerName}
+              onChangeText={setFakeCallerName}
+              placeholder="e.g. Mom"
+            />
+          </View>
+          <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
+            <Typography variant="label" color="secondary" weight="500" style={{ marginBottom: 8 }}>
+              Call Delay (Seconds)
+            </Typography>
+            <Input
+              value={fakeCallDelay.toString()}
+              onChangeText={(text) => {
+                const num = parseInt(text.replace(/[^0-9]/g, ''), 10);
+                setFakeCallDelay(isNaN(num) ? 0 : num);
+              }}
+              placeholder="5"
+              keyboardType="numeric"
+            />
+          </View>
         </SettingsSection>
 
         <SettingsSection title="Support & Legal">

@@ -284,8 +284,8 @@ class BleService implements IBleService {
     );
   }
 
-  setOnSosTriggered(callback: () => void) {
-    console.log('[BLE] SOS callback registered.');
+  setOnSosTriggered(callback: (() => void) | null) {
+    console.log('[BLE] SOS callback updated.');
     this.onSosTriggered = callback;
   }
 

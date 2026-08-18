@@ -1,8 +1,8 @@
-import { NativeModule, requireNativeModule } from 'expo';
+import { NativeModule, requireOptionalNativeModule } from 'expo-modules-core';
 
 declare class SmsSenderModule extends NativeModule {
   sendDirectSMS(phoneNumber: string, message: string): Promise<boolean>;
   openSMSIntent(phoneNumber: string, message: string): Promise<boolean>;
 }
 
-export default requireNativeModule<SmsSenderModule>('SmsSender');
+export default requireOptionalNativeModule<SmsSenderModule>('SmsSender');
