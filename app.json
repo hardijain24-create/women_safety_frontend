@@ -2,6 +2,7 @@
   "expo": {
     "name": "Guardian Band",
     "slug": "guardian-band",
+    "scheme": "guardianband",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -28,7 +29,8 @@
         "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.SEND_SMS",
         "android.permission.READ_PHONE_STATE",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.CALL_PHONE"
       ]
     },
     "web": {},

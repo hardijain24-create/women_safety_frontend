@@ -266,8 +266,17 @@ export const Navigation: React.FC = () => {
     );
   }
 
+  const linking = {
+    prefixes: ['guardianband://'],
+    config: {
+      screens: {
+        SOS: 'sos-trigger',
+      },
+    },
+  };
+
   return (
-    <NavigationContainer theme={navigationTheme} ref={navigationRef}>
+    <NavigationContainer theme={navigationTheme} ref={navigationRef} linking={linking}>
       <RootStack.Navigator screenOptions={{ headerShown: false, ...transitionOptions }}>
         {userToken == null ? (
           <RootStack.Screen name="Auth" component={AuthStackNavigator} />
