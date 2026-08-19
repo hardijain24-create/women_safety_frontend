@@ -1,6 +1,26 @@
 node_modules/
 .expo/
-android/
-ios/
 dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Android build outputs & local config
+android/.gradle/
+android/.kotlin/
+android/app/build/
+android/build/
+android/.idea/
+android/local.properties
+android/*.iml
+android/app/*.iml
+modules/**/build/
+modules/**/.gradle/
+
+# iOS
+ios/
 
