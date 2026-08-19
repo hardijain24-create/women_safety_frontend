@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,11 +18,16 @@ import { AuthProvider } from './src/context/AuthContext';
 import { BleProvider } from './src/context/BleContext';
 import { SettingsProvider } from './src/context/SettingsContext';
 import { GlobalAlert } from './src/utils/alert';
+import { NotificationTriggerService } from './src/services/NotificationTriggerService';
 
 // Register background tasks at module scope (must be imported before any component renders)
 import './src/services/LocationTaskManager';
 
 export default function App(): JSX.Element {
+  useEffect(() => {
+    NotificationTriggerService.init();
+  }, []);
+
   const [fontsLoaded] = useFonts({
     'Manrope-Light': Manrope_300Light,
     'Manrope-Regular': Manrope_400Regular,

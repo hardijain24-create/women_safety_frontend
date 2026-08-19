@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { AlertTriggerService } from '../services/AlertTriggerService';
+import { AlertTriggerService, SOSStatus } from '../services/AlertTriggerService';
 import { useSettings } from '../context/SettingsContext';
 import { showAlert } from '../utils/alert';
 
@@ -15,6 +15,7 @@ export const useSOS = (user: any) => {
   const [isHoldingCancel, setIsHoldingCancel] = useState(false);
   const [cancelProgress, setCancelProgress] = useState(0);
   const [broadcastError, setBroadcastError] = useState<string | null>(null);
+  const [sosStatus, setSosStatus] = useState<SOSStatus>({ type: 'sending' });
 
   const cancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { vibrationEnabled } = useSettings();
@@ -83,8 +84,10 @@ export const useSOS = (user: any) => {
   }, [isHoldingCancel, vibrationEnabled]);
 
   const triggerSOS = async () => {
+    console.log("[SOS DEBUG] useSOS.triggerSOS called");
     setMode('active');
     setBroadcastError(null);
+    setSosStatus({ type: 'sending' });
     if (vibrationEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
     }
@@ -95,10 +98,11 @@ export const useSOS = (user: any) => {
       console.warn('Could not get coordinates in SOS hook:', err);
     }
     try {
-      await AlertTriggerService.triggerSOS(user);
+      await AlertTriggerService.triggerSOS(user, setSosStatus);
     } catch (err: any) {
       console.error('[useSOS] AlertTriggerService.triggerSOS failed:', err);
       setBroadcastError(err.message || 'Could not reach server — local alarm only');
+      setSosStatus({ type: 'failed', message: err.message || 'Could not reach server — local alarm only' });
     }
   };
 
@@ -170,5 +174,6 @@ export const useSOS = (user: any) => {
     setMode,
     isPinConfigured,
     broadcastError,
+    sosStatus,
   };
 };

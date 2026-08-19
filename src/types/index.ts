@@ -219,6 +219,8 @@ export interface EmergencyContact {
   relation: string;
   isPrimary: boolean;
   avatar?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface AlertItem {

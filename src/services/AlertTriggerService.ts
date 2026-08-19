@@ -1,4 +1,4 @@
-import { Platform, Vibration, PermissionsAndroid } from 'react-native';
+import { Platform, Vibration, PermissionsAndroid, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
@@ -13,12 +13,30 @@ type User = {
   [key: string]: any;
 };
 
+export type SOSStatus =
+  | { type: 'sending' }
+  | { type: 'sent' }
+  | { type: 'calling'; contactName: string }
+  | { type: 'no_contact' }
+  | { type: 'dialer_failed' }
+  | { type: 'failed'; message: string };
+
+let isTriggering = false;
+
 export const AlertTriggerService = {
-  async triggerSOS(user: User | null): Promise<void> {
+  async triggerSOS(user: User | null, onStatusUpdate?: (status: SOSStatus) => void): Promise<void> {
+    console.log("[SOS DEBUG] AlertTriggerService.triggerSOS entered");
+    if (isTriggering) {
+      console.log('[AlertTriggerService] SOS trigger already in progress. Ignoring duplicate request.');
+      return;
+    }
+    isTriggering = true;
+
     // Start local alarm feedback instantly
     this.playSOSFeedback();
 
     try {
+      console.log("[SOS DEBUG] user status checked, id:", user?.id);
       if (!user?.id) {
         console.warn("User not found, proceeding with local SOS actions.");
         throw new Error("Could not reach server — local alarm only");
@@ -28,15 +46,20 @@ export const AlertTriggerService = {
       let latitude = 0;
       let longitude = 0;
       try {
+        console.log("[SOS DEBUG] Requesting location permissions");
         const { status } = await Location.requestForegroundPermissionsAsync();
+        console.log("[SOS DEBUG] Permissions status:", status);
         if (status === 'granted') {
+          console.log("[SOS DEBUG] Calling Location.getCurrentPositionAsync");
           const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          console.log("[SOS DEBUG] Location acquired:", location);
           latitude = location.coords.latitude;
           longitude = location.coords.longitude;
         } else {
           console.warn('[SOS] Location permission denied, sending alert without coordinates.');
         }
       } catch (locErr) {
+        console.log("[SOS DEBUG] Location error caught:", locErr);
         console.warn('[SOS] GPS fetch failed, sending alert without coordinates.', locErr);
       }
 
@@ -49,6 +72,7 @@ export const AlertTriggerService = {
       // Try Direct SMS on Android
       if (Platform.OS === 'android') {
         try {
+          console.log("[SOS DEBUG] Requesting Android SMS permissions...");
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.SEND_SMS,
             {
@@ -59,6 +83,7 @@ export const AlertTriggerService = {
               buttonPositive: 'OK',
             }
           );
+          console.log("[SOS DEBUG] Android SMS permissions result:", granted);
 
           const message = `🚨 EMERGENCY ALERT 🚨\n\n${user.name || 'Someone'} may be in danger!\n\n📍 Location:\n${mapsLink}\n\nPlease act immediately.`;
           
@@ -114,15 +139,49 @@ export const AlertTriggerService = {
       }
 
       // Trigger Backend Alert (always fires, even with lat/lng of 0)
-      await alertApi.triggerAlert({
+      onStatusUpdate?.({ type: 'sending' });
+      console.log("[SOS DEBUG] Calling alertApi.triggerAlert");
+      const response = await alertApi.triggerAlert({
         user_id: user.id,
         latitude,
         longitude,
         skip_sms: skipTwilioSms,
       });
+      console.log("[SOS DEBUG] alertApi.triggerAlert RESOLVED", response);
+
+      // Handle native call to nearest eligible contact
+      const nearestContact = response?.nearest_contact || response?.data?.nearest_contact;
+      console.log("[SOS DEBUG] nearest_contact", nearestContact);
+
+      if (nearestContact) {
+        onStatusUpdate?.({ type: 'sent' });
+        const phoneNumber = nearestContact.phone?.trim();
+        if (phoneNumber) {
+          onStatusUpdate?.({ type: 'calling', contactName: nearestContact.name || 'nearest contact' });
+          // requestAnimationFrame yields one render frame so React Native can paint "calling" state
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          try {
+            console.log("[SOS DEBUG] ABOUT TO OPEN DIALER", phoneNumber);
+            await Linking.openURL(`tel:${phoneNumber}`);
+            console.log("[SOS DEBUG] DIALER INTENT OPENED");
+          } catch (callErr: any) {
+            console.error("[SOS DEBUG] DIALER FAILED", callErr);
+            onStatusUpdate?.({ type: 'dialer_failed' });
+          }
+        } else {
+          onStatusUpdate?.({ type: 'no_contact' });
+        }
+      } else {
+        onStatusUpdate?.({ type: 'no_contact' });
+      }
       
     } catch (e: any) {
+      onStatusUpdate?.({ type: 'failed', message: e.message || 'Emergency alert trigger failed.' });
       throw new Error(e.response?.data?.message || e.message);
+    } finally {
+      setTimeout(() => {
+        isTriggering = false;
+      }, 5000);
     }
   },
 

@@ -8,7 +8,7 @@ import { useTheme } from '../../theme';
 import { Typography, Icon, Avatar, Divider } from '../../components/atoms';
 import { Card, HeroSOSButton } from '../../components/molecules';
 import { useBle } from '../../context/BleContext';
-import { alertApi } from '../../api/services';
+import { SmsSender } from '../../../modules/sms-sender';
 
 import { useLocation } from '../../hooks/useLocation';
 import { AuthContext } from '../../context/AuthContext';
@@ -63,18 +63,58 @@ export const HomeScreen: React.FC = () => {
         return;
       }
       
+      const contacts = user.emergency_contacts || [];
+      if (contacts.length === 0) {
+        showAlert('No Contacts', 'You have not added any emergency contacts yet.');
+        return;
+      }
+
+      console.log("[SAFE DEBUG] I'm Safe pressed");
+      console.log(`[SAFE DEBUG] Emergency contacts found: ${contacts.length}`);
+      
       const loc = await fetchLocation();
       const lat = loc ? loc.coords.latitude : 0;
       const lng = loc ? loc.coords.longitude : 0;
       
-      await alertApi.triggerAlert({
-        user_id: user.id,
-        latitude: lat,
-        longitude: lng,
-        alert_type: 'check_in',
-      });
-      
-      showAlert("Safety Verified", "Sent I'm Safe check-in alert to emergency guardians.");
+      const mapsLink = (lat !== 0 || lng !== 0)
+        ? `https://maps.google.com/?q=${lat},${lng}`
+        : 'Location unavailable';
+
+      const message = `✅ I'm Safe ✅\n\nI wanted to let you know that I'm okay. No emergency.\n\n📍 Location:\n${mapsLink}`;
+
+      const normalizePhoneNumber = (phone: string): string => {
+        const hasPlus = phone.trim().startsWith('+');
+        const digits = phone.replace(/\D/g, '');
+        return (hasPlus ? '+' : '') + digits;
+      };
+
+      const recipients = contacts
+        .map((contact: any) => contact.phone ? normalizePhoneNumber(contact.phone) : '')
+        .filter((phone: string) => phone.length > 0);
+
+      if (recipients.length === 0) {
+        showAlert("Failed", "No valid phone numbers found among your emergency contacts.");
+        return;
+      }
+
+      const recipientString = recipients.join(',');
+
+      console.log("[SAFE DEBUG] contacts found:", contacts.length);
+      console.log("[SAFE DEBUG] normalized recipients:", recipients.length);
+      console.log("[SAFE DEBUG] SMS builder invoked");
+
+      try {
+        if (SmsSender) {
+          await SmsSender.openSMSIntent(recipientString, message);
+          console.log("[SAFE DEBUG] SMS composer opened");
+          showAlert("Safety Broadcast", "Opening native SMS composer for guardians.");
+        } else {
+          throw new Error("SmsSender native module not available");
+        }
+      } catch (intentErr) {
+        console.warn(`[I'm Safe] Failed to open SMS intent:`, intentErr);
+        showAlert("Error", "Could not open SMS composer.");
+      }
     } catch (e: any) {
       showAlert('Error', e.message || 'Failed to send safety check-in.');
     }

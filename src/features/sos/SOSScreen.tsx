@@ -28,6 +28,7 @@ export const SOSScreen: React.FC = () => {
     isPinConfigured,
     broadcastError,
     location,
+    sosStatus,
   } = useSOS(user);
 
 
@@ -104,12 +105,70 @@ export const SOSScreen: React.FC = () => {
             {location ? "GPS coordinates locked" : "Locating GPS coordinates..."}
           </Typography>
         </View>
-        <View style={styles.bulletRow}>
-          <Icon name={broadcastError ? "close" : "check"} size={16} color={broadcastError ? theme.colors.error : theme.colors.success} />
-          <Typography variant="bodySmall" color="primary">
-            {broadcastError ? "Emergency message failed to send" : "Emergency message sent"}
-          </Typography>
-        </View>
+        {/* Dynamic Broadcast & Dialer Call Status */}
+        {sosStatus.type === 'sending' && (
+          <View style={styles.bulletRow}>
+            <Icon name="phone" size={16} color={theme.colors.primary} />
+            <Typography variant="bodySmall" color="primary" style={{ fontWeight: '600' }}>
+              🚨 Sending SOS...
+            </Typography>
+          </View>
+        )}
+
+        {sosStatus.type === 'failed' && (
+          <>
+            <View style={styles.bulletRow}>
+              <Icon name="close" size={16} color={theme.colors.error} />
+              <Typography variant="bodySmall" color="primary">
+                ❌ Emergency message failed to send
+              </Typography>
+            </View>
+            <View style={styles.bulletRow}>
+              <Icon name="close" size={16} color={theme.colors.error} />
+              <Typography variant="bodySmall" color="primary" style={{ fontWeight: '600' }}>
+                {sosStatus.message}
+              </Typography>
+            </View>
+          </>
+        )}
+
+        {sosStatus.type !== 'sending' && sosStatus.type !== 'failed' && (
+          <>
+            <View style={styles.bulletRow}>
+              <Icon name="check" size={16} color={theme.colors.success} />
+              <Typography variant="bodySmall" color="primary">
+                ✓ Emergency alert sent
+              </Typography>
+            </View>
+
+            {sosStatus.type === 'calling' && (
+              <View style={styles.bulletRow}>
+                <Icon name="phone" size={16} color={theme.colors.primary} />
+                <Typography variant="bodySmall" color="primary" style={{ fontWeight: '600' }}>
+                  📞 Calling {sosStatus.contactName}...
+                </Typography>
+              </View>
+            )}
+
+            {sosStatus.type === 'no_contact' && (
+              <View style={styles.bulletRow}>
+                <Icon name="info" size={16} color={theme.colors.primary} />
+                <Typography variant="bodySmall" color="primary" style={{ fontWeight: '600' }}>
+                  No nearest emergency contact available.
+                </Typography>
+              </View>
+            )}
+
+            {sosStatus.type === 'dialer_failed' && (
+              <View style={styles.bulletRow}>
+                <Icon name="close" size={16} color={theme.colors.error} />
+                <Typography variant="bodySmall" color="primary" style={{ fontWeight: '600' }}>
+                  ⚠️ Could not open phone dialer.
+                </Typography>
+              </View>
+            )}
+          </>
+        )}
       </Card>
 
       <Button

@@ -9,6 +9,7 @@ import { Card, SearchBar, ContactCard } from '../../components/molecules';
 import { ScreenLayout, Header, BottomSheet } from '../../components/organisms';
 import { useContacts } from '../../hooks/useContacts';
 import { showAlert } from '../../utils/alert';
+import { EmergencyContact } from '../../types';
 
 export const ContactsScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -32,6 +33,8 @@ export const ContactsScreen: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [latitudeStr, setLatitudeStr] = useState('');
+  const [longitudeStr, setLongitudeStr] = useState('');
   const [isPrimary, setIsPrimary] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -43,16 +46,38 @@ export const ContactsScreen: React.FC = () => {
     setErrorMsg('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     
-    const success = await addContact({
+    const contactData: Partial<EmergencyContact> = {
       name: name.trim(),
       phone: phone.trim().replace(/\D/g, ''),
       relation: 'Guardian',
       isPrimary,
-    });
+    };
+
+    if (latitudeStr.trim()) {
+      const latVal = parseFloat(latitudeStr.trim());
+      if (isNaN(latVal)) {
+        setErrorMsg('Invalid latitude value.');
+        return;
+      }
+      contactData.latitude = latVal;
+    }
+
+    if (longitudeStr.trim()) {
+      const lonVal = parseFloat(longitudeStr.trim());
+      if (isNaN(lonVal)) {
+        setErrorMsg('Invalid longitude value.');
+        return;
+      }
+      contactData.longitude = lonVal;
+    }
+
+    const success = await addContact(contactData);
 
     if (success) {
       setName('');
       setPhone('');
+      setLatitudeStr('');
+      setLongitudeStr('');
       setIsPrimary(false);
       setIsModalOpen(false);
       showAlert('Success', 'Emergency contact added.');
@@ -132,11 +157,16 @@ export const ContactsScreen: React.FC = () => {
       </View>
 
       {/* Add Contact Slider */}
-      <BottomSheet isVisible={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Guardian">
+      <BottomSheet isVisible={isModalOpen} onClose={() => {
+        setIsModalOpen(false);
+        setErrorMsg('');
+      }} title="New Guardian">
         <View style={{ paddingBottom: 24 }}>
           {errorMsg ? <Typography variant="caption" color="error" style={{ marginBottom: 8 }}>{errorMsg}</Typography> : null}
           <Input label="Name" value={name} onChangeText={setName} placeholder="John Doe" variant="outlined" />
           <Input label="Phone" value={phone} onChangeText={setPhone} placeholder="+1 (555) 000-0000" keyboardType="phone-pad" variant="outlined" />
+          <Input label="Latitude (Optional)" value={latitudeStr} onChangeText={setLatitudeStr} placeholder="e.g. 23.0225" keyboardType="numeric" variant="outlined" />
+          <Input label="Longitude (Optional)" value={longitudeStr} onChangeText={setLongitudeStr} placeholder="e.g. 72.5714" keyboardType="numeric" variant="outlined" />
           <View style={styles.toggleRow}>
             <Toggle label="Set as Primary Guardian" value={isPrimary} onValueChange={setIsPrimary} size="large" />
           </View>
