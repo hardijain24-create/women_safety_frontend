@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { alertApi } from '../api/services';
+import { LiveLocationManager } from './LocationTaskManager';
 
 import { SmsSender } from '../../modules/sms-sender';
 
@@ -56,6 +57,8 @@ export const AlertTriggerService = {
           console.log("[SOS DEBUG] Location acquired:", location);
           latitude = location.coords.latitude;
           longitude = location.coords.longitude;
+          
+          LiveLocationManager.startSharing(user.id).catch(e => console.warn('[SOS DEBUG] Live location start failed:', e));
         } else {
           console.warn('[SOS] Location permission denied, sending alert without coordinates.');
         }
@@ -112,13 +115,34 @@ export const AlertTriggerService = {
 
             if (Platform.OS === 'android') {
               try {
-                await IntentLauncher.startActivityAsync(
-                  'android.intent.action.DIAL',
+                const granted = await PermissionsAndroid.request(
+                  PermissionsAndroid.PERMISSIONS.CALL_PHONE,
                   {
-                    data: `tel:${phoneNumber}`,
+                    title: 'Phone Call Permission',
+                    message: 'Guardian needs access to make phone calls to contact your emergency contacts instantly.',
+                    buttonNeutral: 'Ask Me Later',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'OK',
                   }
                 );
-                console.log("[SOS DEBUG] Android DIAL intent launched successfully");
+                
+                if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                  await IntentLauncher.startActivityAsync(
+                    'android.intent.action.CALL',
+                    {
+                      data: `tel:${phoneNumber}`,
+                    }
+                  );
+                  console.log("[SOS DEBUG] Android CALL intent launched successfully");
+                } else {
+                  await IntentLauncher.startActivityAsync(
+                    'android.intent.action.DIAL',
+                    {
+                      data: `tel:${phoneNumber}`,
+                    }
+                  );
+                  console.log("[SOS DEBUG] Android DIAL intent launched successfully (CALL denied)");
+                }
               } catch (intentErr: any) {
                 console.log("[SOS DEBUG] Android DIAL intent failed:", intentErr);
                 console.log("[SOS DEBUG] Trying Linking.openURL fallback...");

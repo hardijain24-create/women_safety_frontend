@@ -41,7 +41,11 @@ export const SOSScreen: React.FC = () => {
 
   const handleDeactivateSuccess = () => {
     showAlert('SOS Resolved', 'Emergency alert resolved. Returning to Ambient Protect mode.');
-    navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
+    }
   };
 
   const renderCountdown = () => (
@@ -69,7 +73,11 @@ export const SOSScreen: React.FC = () => {
           if (vibrationEnabled) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
           }
-          navigation.goBack();
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
+          }
         }}
         variant="ghost"
         textStyle={{ color: theme.colors.error, fontWeight: '700' }}
