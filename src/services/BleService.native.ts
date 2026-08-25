@@ -204,9 +204,7 @@ class BleService implements IBleService {
     }
     try {
       console.log('[BLE] Connecting to device:', deviceId);
-      const device = await this.manager.connectToDevice(deviceId, {
-        requestMTU: 128,
-      });
+      const device = await this.manager.connectToDevice(deviceId);
       this.connectedDevice = device;
       console.log('[BLE] Connected! Discovering services...');
 
@@ -234,7 +232,7 @@ class BleService implements IBleService {
     } catch (e: any) {
       console.error('[BLE] Connection error:', e?.message || e);
       this.clearTelemetryInterval();
-      return false;
+      throw e;
     }
   }
 
