@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Guardian Band",
+    "slug": "guardian-band",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.guardian.band"
+    },
+    "android": {
+      "package": "com.guardian.band",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.SEND_SMS",
+        "android.permission.READ_PHONE_STATE"
+      ]
+    },
+    "web": {},
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Guardian Band to access your microphone for SOS alerts."
+        }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to Guardian Band for SOS alerts."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c0f2e02e-a8be-4cfc-b6d8-3eb618cb25ab"
+      }
+    }
+  }
+}
