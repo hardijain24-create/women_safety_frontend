@@ -7,13 +7,15 @@ const GUARDIAN_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const GUARDIAN_SOS_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
 
 class BleService {
-  manager: BleManager;
+  manager: BleManager | null = null;
   connectedDevice: Device | null = null;
   onSosTriggered: (() => void) | null = null;
   private isMonitoring: boolean = false;
 
   constructor() {
-    this.manager = new BleManager();
+    if (Platform.OS !== 'web') {
+      this.manager = new BleManager();
+    }
   }
 
   async requestPermissions(): Promise<boolean> {
@@ -41,7 +43,7 @@ class BleService {
 
   scanForDevices(onDeviceFound: (device: Device) => void, onStop: () => void) {
     console.log('[BLE] Starting device scan...');
-    this.manager.startDeviceScan(
+    this.manager?.startDeviceScan(
       null, // Scan for all devices, filtering manually inside the callback to fix Android compatibility issues
       { allowDuplicates: false },
       (error, device) => {
@@ -67,22 +69,26 @@ class BleService {
 
     // Stop scan after 15 seconds
     setTimeout(() => {
-      this.manager.stopDeviceScan();
+      this.manager?.stopDeviceScan();
       console.log('[BLE] Scan timed out.');
       onStop();
     }, 15000);
   }
 
   stopScan() {
-    this.manager.stopDeviceScan();
+    this.manager?.stopDeviceScan();
   }
 
   async connectToDevice(deviceId: string): Promise<boolean> {
     try {
       console.log('[BLE] Connecting to device:', deviceId);
-      const device = await this.manager.connectToDevice(deviceId, {
+      const device = await this.manager?.connectToDevice(deviceId, {
         requestMTU: 128,
       });
+      if (!device) {
+        console.error('[BLE] Manager is null or connection failed');
+        return false;
+      }
       this.connectedDevice = device;
       console.log('[BLE] Connected! Discovering services...');
       await AsyncStorage.setItem('pairedDeviceId', deviceId);
@@ -122,7 +128,7 @@ class BleService {
   async disconnect() {
     try {
       if (this.connectedDevice) {
-        await this.manager.cancelDeviceConnection(this.connectedDevice.id);
+        await this.manager?.cancelDeviceConnection(this.connectedDevice.id);
       }
       await AsyncStorage.removeItem('pairedDeviceId');
       this.connectedDevice = null;
