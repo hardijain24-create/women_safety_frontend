@@ -7,13 +7,15 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../theme';
 import { Button, Typography, Icon, Toggle, ProgressRing } from '../../components/atoms';
 import { Card, SettingsRow } from '../../components/molecules';
-import { ScreenLayout, Header } from '../../components/organisms';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScreenLayout, Header, DisclosureModal } from '../../components/organisms';
 import { useBle } from '../../context/BleContext';
 import { useSettings } from '../../context/SettingsContext';
 import { showAlert } from '../../utils/alert';
 
 export const BandScreen: React.FC = () => {
   const { theme } = useTheme();
+  const [showDisclosure, setShowDisclosure] = React.useState(false);
   
   const {
     isConnected,
@@ -39,15 +41,31 @@ export const BandScreen: React.FC = () => {
     setAutoConnect: setAutoSync,
   } = useSettings();
 
-
-
   const handlePair = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    
+    // Check if Prominent Disclosure was already accepted
+    const accepted = await AsyncStorage.getItem('@guardian_disclosure_accepted');
+    if (!accepted) {
+      setShowDisclosure(true);
+      return;
+    }
+
+    proceedWithScan();
+  };
+
+  const proceedWithScan = async () => {
     try {
       await scanForDevices();
     } catch (e: any) {
       showAlert('Connection Failed', e.message || 'Bluetooth initialization failed.');
     }
+  };
+
+  const handleAcceptDisclosure = async () => {
+    await AsyncStorage.setItem('@guardian_disclosure_accepted', 'true');
+    setShowDisclosure(false);
+    proceedWithScan();
   };
 
   const handleDisconnect = () => {
@@ -89,6 +107,11 @@ export const BandScreen: React.FC = () => {
 
   return (
     <ScreenLayout header={<Header title="My Device" subtitle="Guardian Watch Sync" />} scrollable safeArea>
+      <DisclosureModal 
+        visible={showDisclosure} 
+        onAccept={handleAcceptDisclosure} 
+        onDecline={() => setShowDisclosure(false)} 
+      />
       <View style={{ paddingBottom: 32 }}>
         
         {/* Apple Watch style Bluetooth Pairing Console */}

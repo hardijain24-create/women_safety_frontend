@@ -137,6 +137,8 @@ class BleService implements IBleService {
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.CALL_PHONE,
+          PermissionsAndroid.PERMISSIONS.SEND_SMS,
         ]);
         return (
           result['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
@@ -204,7 +206,15 @@ class BleService implements IBleService {
     }
     try {
       console.log('[BLE] Connecting to device:', deviceId);
-      const device = await this.manager.connectToDevice(deviceId);
+
+      // Race the connection against a 10-second timeout so it never hangs silently
+      const device = await Promise.race([
+        this.manager.connectToDevice(deviceId),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Connection timed out after 10s. Make sure the Guardian device is powered on and nearby.')), 10000)
+        ),
+      ]);
+
       this.connectedDevice = device;
       console.log('[BLE] Connected! Discovering services...');
 
