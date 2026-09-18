@@ -4,6 +4,6 @@ export { Sidebar } from './Sidebar';
 export { BottomSheet } from './BottomSheet';
 export { DisclosureModal } from './DisclosureModal';
 export { VoiceDisclosureModal } from './VoiceDisclosureModal';
-export { MapViewComponent } from './MapViewComponent';
+export { SettingsSection } from './SettingsSection';
 export { EmergencyDashboard } from './EmergencyDashboard';
 export { StatusGrid } from './StatusGrid';

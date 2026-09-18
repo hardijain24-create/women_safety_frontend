@@ -12,8 +12,6 @@ import { createNavigationContainerRef } from '@react-navigation/native';
 
 // Auth Screens
 import { LoginScreen } from '../features/auth/LoginScreen';
-import { RegisterScreen } from '../features/auth/RegisterScreen';
-
 
 // Main Screens
 import { HomeScreen } from '../features/home/HomeScreen';

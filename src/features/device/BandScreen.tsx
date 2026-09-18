@@ -13,12 +13,12 @@ import { useBle } from '../../context/BleContext';
 import { useSettings } from '../../context/SettingsContext';
 import { showAlert } from '../../utils/alert';
 import { GuardianVoiceService } from '../../services/GuardianVoiceService';
-import { useAuth } from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import { AlertTriggerService } from '../../services/AlertTriggerService';
 
 export const BandScreen: React.FC = () => {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user } = React.useContext(AuthContext);
   const [showDisclosure, setShowDisclosure] = React.useState(false);
   const [showVoiceDisclosure, setShowVoiceDisclosure] = React.useState(false);
   

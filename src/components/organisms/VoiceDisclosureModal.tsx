@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Modal, StyleSheet, Platform, PermissionsAndroid } from 'react-native';
-import { Typography, Button, Icon } from '../../atoms';
-import { useTheme } from '../../../../theme';
+import { Typography, Button, Icon } from '../atoms';
+import { useTheme } from '../../theme';
 
 interface VoiceDisclosureModalProps {
   visible: boolean;
@@ -42,7 +42,7 @@ export const VoiceDisclosureModal: React.FC<VoiceDisclosureModalProps> = ({ visi
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={[styles.overlay, { backgroundColor: theme.colors.background + 'E6' }]}>
-        <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary }]}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.primary + '15' }]}>
             <Icon name="mic" size={32} color={theme.colors.primary} />
           </View>
@@ -56,7 +56,7 @@ export const VoiceDisclosureModal: React.FC<VoiceDisclosureModalProps> = ({ visi
           </Typography>
 
           <View style={styles.privacyBox}>
-            <Typography variant="caption" color="text" weight="600" style={{ marginBottom: 4 }}>
+            <Typography variant="caption" color="primary" weight="600" style={{ marginBottom: 4 }}>
               🔒 Your privacy is strictly protected:
             </Typography>
             <Typography variant="caption" color="muted">

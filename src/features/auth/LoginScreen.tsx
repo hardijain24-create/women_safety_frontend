@@ -1,19 +1,16 @@
 import React, { useState, useContext, useRef } from 'react';
 import { View, KeyboardAvoidingView, Platform, TouchableOpacity, Keyboard, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
 import { useTheme } from '../../theme';
 import { Button, Typography, Input, Icon } from '../../components/atoms';
 import { Card } from '../../components/molecules';
-import { ROUTES } from '../../constants';
 import { AuthContext } from '../../context/AuthContext';
 import { showAlert } from '../../utils/alert';
 
 export const LoginScreen: React.FC = () => {
   const { theme } = useTheme();
-  const navigation = useNavigation<any>();
   const { login } = useContext(AuthContext);
 
   const [email, setEmail] = useState('');

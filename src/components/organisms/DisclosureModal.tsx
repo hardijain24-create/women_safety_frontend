@@ -16,9 +16,9 @@ export const DisclosureModal: React.FC<DisclosureModalProps> = ({ visible, onAcc
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Important Privacy Disclosure</Text>
+          <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Important Privacy Disclosure</Text>
           <ScrollView style={styles.scrollArea}>
-            <Text style={[styles.text, { color: theme.colors.text }]}>
+            <Text style={[styles.text, { color: theme.colors.textPrimary }]}>
               Guardian Band is a physical safety application designed to protect you during emergencies. 
               To function correctly, it requires the following sensitive permissions:
             </Text>
@@ -38,7 +38,7 @@ export const DisclosureModal: React.FC<DisclosureModalProps> = ({ visible, onAcc
               Bluetooth is required to maintain a secure connection with your Guardian Band wearable device.
             </Text>
 
-            <Text style={[styles.text, { color: theme.colors.text, marginTop: 10, fontWeight: 'bold' }]}>
+            <Text style={[styles.text, { color: theme.colors.textPrimary, marginTop: 10, fontWeight: 'bold' }]}>
               We do not sell this data. It is used exclusively for your physical safety.
             </Text>
           </ScrollView>
