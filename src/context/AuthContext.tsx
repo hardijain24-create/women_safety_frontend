@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import { authApi, userApi } from '../api/services';
 import { authEmitter } from '../api/client';
 
@@ -78,6 +79,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const detail = error.response.data.detail;
         msg = Array.isArray(detail) ? detail[0]?.msg : detail;
       }
+      
+      if (msg && msg.includes("subscription")) {
+        Alert.alert("Access Denied", "You need to purchase a Guardian device at guardian.com to use this app.");
+      }
+      
       throw new Error(msg || error.message || 'Login failed');
     } finally {
       setIsLoading(false);

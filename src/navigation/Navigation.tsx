@@ -132,7 +132,6 @@ const AuthStackNavigator: React.FC = () => {
   return (
     <AuthStack.Navigator screenOptions={screenOptions}>
       <AuthStack.Screen name={ROUTES.LOGIN} component={LoginScreen} />
-      <AuthStack.Screen name={ROUTES.REGISTER} component={RegisterScreen} />
     </AuthStack.Navigator>
   );
 };

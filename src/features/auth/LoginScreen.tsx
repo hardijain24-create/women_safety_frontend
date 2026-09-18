@@ -185,19 +185,6 @@ export const LoginScreen: React.FC = () => {
             disabled={!isFormValid || loading}
             fullWidth
           />
-
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-              navigation.navigate(ROUTES.REGISTER);
-            }}
-            activeOpacity={0.7}
-            style={styles.registerLink}
-          >
-            <Typography variant="bodySmall" style={{ color: theme.colors.primary, fontWeight: '700' }}>
-              Create New Account
-            </Typography>
-          </TouchableOpacity>
         </Card>
 
         {/* Biometrics Illustration HUD */}

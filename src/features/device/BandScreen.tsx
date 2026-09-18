@@ -8,14 +8,19 @@ import { useTheme } from '../../theme';
 import { Button, Typography, Icon, Toggle, ProgressRing } from '../../components/atoms';
 import { Card, SettingsRow } from '../../components/molecules';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ScreenLayout, Header, DisclosureModal } from '../../components/organisms';
+import { ScreenLayout, Header, DisclosureModal, VoiceDisclosureModal } from '../../components/organisms';
 import { useBle } from '../../context/BleContext';
 import { useSettings } from '../../context/SettingsContext';
 import { showAlert } from '../../utils/alert';
+import { GuardianVoiceService } from '../../services/GuardianVoiceService';
+import { useAuth } from '../../context/AuthContext';
+import { AlertTriggerService } from '../../services/AlertTriggerService';
 
 export const BandScreen: React.FC = () => {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const [showDisclosure, setShowDisclosure] = React.useState(false);
+  const [showVoiceDisclosure, setShowVoiceDisclosure] = React.useState(false);
   
   const {
     isConnected,
@@ -36,10 +41,35 @@ export const BandScreen: React.FC = () => {
     vibrationEnabled,
     alarmEnabled,
     autoConnect: autoSync,
+    voiceEnabled,
     setVibrationEnabled,
     setAlarmEnabled,
     setAutoConnect: setAutoSync,
+    setVoiceEnabled,
   } = useSettings();
+
+  // Handle Voice SOS Lifecycle
+  React.useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    
+    if (voiceEnabled) {
+      GuardianVoiceService.startListening().then(() => {
+        unsubscribe = GuardianVoiceService.onWakeWordDetected(() => {
+          AlertTriggerService.triggerSOS(user);
+        });
+      }).catch((err) => {
+        console.warn('Failed to start voice service:', err);
+        setVoiceEnabled(false);
+      });
+    } else {
+      GuardianVoiceService.stopListening();
+    }
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+      // We don't stop listening on unmount because it's a background service!
+    };
+  }, [voiceEnabled, user]);
 
   const handlePair = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -66,6 +96,11 @@ export const BandScreen: React.FC = () => {
     await AsyncStorage.setItem('@guardian_disclosure_accepted', 'true');
     setShowDisclosure(false);
     proceedWithScan();
+  };
+
+  const handleAcceptVoiceDisclosure = async () => {
+    setShowVoiceDisclosure(false);
+    setVoiceEnabled(true);
   };
 
   const handleDisconnect = () => {
@@ -111,6 +146,14 @@ export const BandScreen: React.FC = () => {
         visible={showDisclosure} 
         onAccept={handleAcceptDisclosure} 
         onDecline={() => setShowDisclosure(false)} 
+      />
+      <VoiceDisclosureModal
+        visible={showVoiceDisclosure}
+        onAccept={handleAcceptVoiceDisclosure}
+        onDecline={() => {
+          setShowVoiceDisclosure(false);
+          setVoiceEnabled(false);
+        }}
       />
       <View style={{ paddingBottom: 32 }}>
         
@@ -264,9 +307,27 @@ export const BandScreen: React.FC = () => {
             label="Background Auto-Sync"
             description="Background device auto pairing"
             icon="band"
-            noBorder
             rightComponent={
               <Toggle value={autoSync} onValueChange={setAutoSync} size="large" />
+            }
+          />
+          <SettingsRow
+            label="Voice SOS (Guardian)"
+            description='Trigger SOS by saying "Guardian Guardian"'
+            icon="mic"
+            noBorder
+            rightComponent={
+              <Toggle 
+                value={voiceEnabled} 
+                onValueChange={(val) => {
+                  if (val) {
+                    setShowVoiceDisclosure(true);
+                  } else {
+                    setVoiceEnabled(false);
+                  }
+                }} 
+                size="large" 
+              />
             }
           />
         </Card>

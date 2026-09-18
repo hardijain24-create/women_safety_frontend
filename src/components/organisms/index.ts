@@ -3,6 +3,7 @@ export { DevicePanel } from './DevicePanel';
 export { Sidebar } from './Sidebar';
 export { BottomSheet } from './BottomSheet';
 export { DisclosureModal } from './DisclosureModal';
-export { SettingsSection } from './SettingsSection';
+export { VoiceDisclosureModal } from './VoiceDisclosureModal';
+export { MapViewComponent } from './MapViewComponent';
 export { EmergencyDashboard } from './EmergencyDashboard';
 export { StatusGrid } from './StatusGrid';
